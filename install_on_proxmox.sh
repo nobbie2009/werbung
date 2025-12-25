@@ -62,7 +62,7 @@ pct create $CT_ID $TEMPLATE \
     --password $PASSWORD \
     --rootfs $STORAGE:4 \
     --net0 name=eth0,bridge=$BRIDGE,ip=dhcp,type=veth \
-    --features nesting=1 \
+    --features nesting=1,keyctl=1 \
     --onboot 1 \
     --unprivileged 1
 
@@ -74,24 +74,15 @@ fi
 # Container starten
 echo -e "${GREEN}Starte Container...${NC}"
 pct start $CT_ID
-sleep 5 # Warten bis Netzwerk da ist
+sleep 10 # Warten bis Netzwerk da ist
 
 # Git installieren im Container
 echo -e "${GREEN}Bereite Container vor...${NC}"
-# Wir müssen warten bis Netzwerk da ist. 
-# lxc-attach führt befehle direkt aus.
 pct exec $CT_ID -- apt-get update
 pct exec $CT_ID -- apt-get install -y git curl
 
 # Repo klonen
-REPO_URL="https://github.com/nobbie2009/werbung.git" # TODO: User fragen oder festlegen? 
-# Wir nehmen an, das Filesystem ist dieses hier. Aber auf dem Proxmox Host haben wir die Files evtl noch nicht in Git?
-# Der User hat gesagt: "generier mir... Script".
-# Ich gehe davon aus, dass er dieses Script auf den Host kopiert.
-# Und der Container muss den Code von irgendwo her bekommen.
-# Option A: Git Clone von Github (wenn Public).
-# Option B: Files vom Host in den Container kopieren.
-# Ich wähle Option A mit Abfrage, ansonsten Fallback auf Kopie wenn lokal vorhanden.
+REPO_URL="https://github.com/nobbie2009/werbung.git"
 
 echo -e "${BLUE}Wie soll der Code in den Container gelangen?${NC}"
 echo "1) Git Clone (Github: nobbie2009/werbung)"
@@ -102,9 +93,6 @@ SOURCE_OPT=${SOURCE_OPT:-1}
 TARGET_DIR="/opt/werbung"
 
 if [ "$SOURCE_OPT" == "2" ]; then
-    # Kopiere von Host (aktuelles Verzeichnis) nach Container
-    # pct push <vmid> <file> <destination>
-    # pct push kann nur files. Tarpipe ist besser.
     echo -e "${GREEN}Kopiere Dateien...${NC}"
     pct exec $CT_ID -- mkdir -p $TARGET_DIR
     tar -cf - . | pct exec $CT_ID -- tar -xf - -C $TARGET_DIR
@@ -112,17 +100,20 @@ else
     echo -e "${GREEN}Klone Repository...${NC}"
     read -p "Git URL (Standard: https://github.com/nobbie2009/werbung.git): " REPO_URL
     REPO_URL=${REPO_URL:-https://github.com/nobbie2009/werbung.git}
+    
+    # Check if repo exists/clones correctly
     pct exec $CT_ID -- git clone $REPO_URL $TARGET_DIR
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}Fehler beim Klonen des Repositories!${NC}"
+        echo -e "${RED}Bitte stelle sicher, dass das Repo existiert und öffentlich ist.${NC}"
+        exit 1
+    fi
 fi
 
 # Setup ausführen
 echo -e "${GREEN}Führe Setup im Container aus...${NC}"
-# Da setup.sh interaktiv ist, ist das schwierig via pct exec wenn wir eingaben brauchen.
-# Wir können die inputs pipen oder setup.sh silent machen.
-# Aber der User wollte alles abfragen.
-# Wir können die Abfragen HIER machen und dann das setup script mit env vars aufrufen oder eine non-interactive flag bauen.
 
-# Wir fragen hier die Config ab und schreiben die .env im Container direkt.
+# Config abfragen
 echo -e "${BLUE}=== App Konfiguration ===${NC}"
 read -p "Notion Token: " NOTION_TOKEN
 read -p "Notion Database ID: " NOTION_DATABASE_ID
@@ -133,11 +124,15 @@ pct exec $CT_ID -- bash -c "echo 'NOTION_TOKEN=$NOTION_TOKEN' > $TARGET_DIR/.env
 pct exec $CT_ID -- bash -c "echo 'NOTION_DATABASE_ID=$NOTION_DATABASE_ID' >> $TARGET_DIR/.env"
 pct exec $CT_ID -- bash -c "echo 'SYNC_INTERVAL=$SYNC_INTERVAL' >> $TARGET_DIR/.env"
 
-# Setup non-interactive machen?
-# setup.sh fragt NUR nach .env wenn sie nicht existiert. Wir haben sie gerade erstellt.
-# Also läuft setup.sh durch!
+# Startsetup
 pct exec $CT_ID -- chmod +x $TARGET_DIR/setup.sh
-pct exec $CT_ID -- bash -c "cd $TARGET_DIR && ./setup.sh"
+pct exec $CT_ID -- bash -c "if [ -f $TARGET_DIR/setup.sh ]; then cd $TARGET_DIR && ./setup.sh; else echo 'setup.sh nicht gefunden!'; exit 1; fi"
+
+if [ $? -ne 0 ]; then
+    echo -e "${RED}Fehler bei der Installation (setup.sh).${NC}"
+    echo -e "Bitte logge dich in den Container ein und prüfe die Logs: pct enter $CT_ID"
+    exit 1
+fi
 
 # IP ermitteln
 IP=$(pct exec $CT_ID -- hostname -I | awk '{print $1}')
