@@ -13,7 +13,7 @@ Dieses Projekt ist eine Middleware für Digital Signage, die als FastAPI-Anwendu
 2.  Klone dieses Repository in den gewünschten Ordner (z.B. `/opt/werbung`):
     ```bash
     cd /opt
-    git clone [<DEIN_REPO_URL> werbung](https://github.com/nobbie2009/werbung)
+    git clone https://github.com/nobbie2009/werbung
     cd werbung
     ```
 3.  Führe das Setup-Script aus:
