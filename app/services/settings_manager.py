@@ -23,7 +23,11 @@ DEFAULT_SETTINGS = {
     # Countdown
     "countdown_enabled": False,
     "countdown_target": "", # ISO date string
-    "countdown_title": "Countdown"
+    "countdown_enabled": False,
+    "countdown_target": "", # ISO date string
+    "countdown_title": "Countdown",
+    # Appearance
+    "font_scale": 100 # Percentage
 }
 
 class SettingsManager:

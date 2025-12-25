@@ -29,7 +29,7 @@ async def download_file(url: str, filename: str) -> str:
     logger.info(f"Downloading {filename} from {url}...")
     try:
         async with httpx.AsyncClient() as client:
-            response = client.get(url, follow_redirects=True)
+            response = await client.get(url, follow_redirects=True)
             response.raise_for_status()
             with open(filepath, "wb") as f:
                 f.write(response.content)

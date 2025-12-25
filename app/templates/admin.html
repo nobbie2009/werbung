@@ -108,6 +108,13 @@
                 <input type="color" id="background_color" name="background_color" value="#000000">
             </div>
 
+            <div class="form-group">
+                <label for="font_scale">Font Size Scale (%)</label>
+                <input type="range" id="font_scale" name="font_scale" min="50" max="200" value="100"
+                    oninput="document.getElementById('font_scale_val').textContent = this.value + '%'">
+                <span id="font_scale_val">100%</span>
+            </div>
+
             <!-- Corporate Identity -->
             <hr>
             <h3>Corporate Identity</h3>
@@ -208,6 +215,8 @@
 
                 setVal('theme', data.theme);
                 setVal('background_color', data.background_color);
+                setVal('font_scale', data.font_scale || 100);
+                document.getElementById('font_scale_val').textContent = (data.font_scale || 100) + '%';
 
                 setVal('logo_url', data.logo_url);
                 setVal('contact_name', data.contact_name);
@@ -240,7 +249,7 @@
             formData.forEach((value, key) => {
                 if (['screensaver_enabled', 'countdown_enabled'].includes(key)) {
                     jsonData[key] = value === 'true';
-                } else if (key === 'screensaver_timeout') {
+                } else if (['screensaver_timeout', 'font_scale'].includes(key)) {
                     jsonData[key] = parseInt(value);
                 } else {
                     jsonData[key] = value;
