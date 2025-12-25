@@ -37,8 +37,11 @@ class SettingsManager:
 
     def save_settings(self, new_settings: Dict[str, Any]):
         try:
-            # Load current to merge
-            current = self.get_settings()
+            # Load current to merge if exists
+            current = {}
+            if SETTINGS_FILE.exists():
+                current = self.get_settings()
+            
             updated = {**current, **new_settings}
             
             with open(SETTINGS_FILE, "w") as f:

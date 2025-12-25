@@ -3,6 +3,7 @@ import json
 import logging
 from datetime import datetime, timezone
 from urllib.parse import urlparse
+from pathlib import Path
 from notion_client import AsyncClient
 from app.services import file_manager
 
