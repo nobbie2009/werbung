@@ -16,23 +16,14 @@ Dieses Projekt ist eine Middleware für Digital Signage, die als FastAPI-Anwendu
     git clone <DEIN_REPO_URL> werbung
     cd werbung
     ```
-3.  Erstelle eine `.env` Datei basierend auf der Konfiguration und trage deine Secrets ein:
-    ```bash
-    nano .env
-    ```
-    Beispiel `.env` Inhalt (falls nicht direkt im Docker Compose genutzt):
-    ```env
-    NOTION_TOKEN=secret_xxxxxxxxxxxxxxxxxxxx
-    NOTION_DATABASE_ID=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-    SYNC_INTERVAL=300
-    ```
-4.  Führe das Setup-Script aus:
+3.  Führe das Setup-Script aus:
     ```bash
     chmod +x setup.sh
     ./setup.sh
     ```
+    Das Script wird dich nach deinen Konfigurationsdaten (Notion Token, Database ID) fragen und die `.env` Datei automatisch für dich erstellen.
 
-Das Setup-Script wird:
+Das Setup-Script wird außerdem:
 - Das System aktualisieren.
 - Docker und Docker Compose installieren (falls nicht vorhanden).
 - Den `update`-Befehl systemweit einrichten.
