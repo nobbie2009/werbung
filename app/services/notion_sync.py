@@ -13,7 +13,8 @@ logger = logging.getLogger(__name__)
 PROP_NAME = "Name"
 PROPERTY_DESCRIPTION = "Description"
 PROPERTY_MEDIA = "Media"
-PROPERTY_START = "Start"
+PROPERTY_START = "Start" # Support legacy
+PROPERTY_DATE = "Date" # Standard Notion name
 PROPERTY_END = "End"
 PROPERTY_DURATION = "Duration"
 PROPERTY_ACTIVE = "Active"
@@ -63,8 +64,8 @@ async def sync_notion_data():
                 logger.info(f"Skipping '{title}': Active checkbox is unchecked.")
                 continue
 
-            # Check Dates
-            date_prop = props.get(PROPERTY_START, {}).get("date")
+            # Check Dates (Support 'Date' or 'Start')
+            date_prop = props.get(PROPERTY_DATE, {}).get("date") or props.get(PROPERTY_START, {}).get("date")
             start_date = None
             end_date = None
             
