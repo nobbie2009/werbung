@@ -248,6 +248,30 @@
             background: black;
         }
 
+        /* Standard Overlay */
+        .overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 1.5rem 2rem;
+            box-sizing: border-box;
+            z-index: 10;
+        }
+
+        .overlay h1 {
+            margin: 0 0 0.5rem 0;
+            font-size: 2rem;
+        }
+
+        .overlay p {
+            margin: 0;
+            font-size: 1.2rem;
+            line-height: 1.4;
+        }
+
         /* Loading */
         #loading {
             position: absolute;
@@ -486,8 +510,13 @@
 
                 // Optional: Overlay for Standard (if text exists)
                 if (item.title || item.description) {
-                    // We could add an overlay div here similar to previous version if desired
-                    // But user specifically asked for "Text only -> larger font".
+                    const overlay = document.createElement('div');
+                    overlay.classList.add('overlay');
+                    let html = '';
+                    if (item.title) html += `<h1>${item.title}</h1>`;
+                    if (item.description) html += `<p>${item.description}</p>`;
+                    overlay.innerHTML = html;
+                    container.appendChild(overlay);
                 }
                 return { element: container, media: mediaEl };
             }
