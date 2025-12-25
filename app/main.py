@@ -17,6 +17,7 @@ logger = logging.getLogger("main")
 
 # Ensure directories exist
 Path("/app/data/media").mkdir(parents=True, exist_ok=True)
+Path("app/static").mkdir(parents=True, exist_ok=True)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
