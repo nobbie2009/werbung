@@ -96,12 +96,25 @@
             font-size: 1.2rem;
         }
 
+        #qr-container {
+            position: fixed;
+            bottom: 2vh;
+            /* Anchor near bottom */
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 200;
+            /* Above footer */
+            background: white;
+            padding: 5px;
+            border-radius: 8px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+        }
+
         #qr-container img {
-            height: 80%;
-            /* of footer height */
-            width: auto;
-            border: 2px solid white;
-            border-radius: 4px;
+            width: 15vh;
+            /* Fixed size larger than footer */
+            height: 15vh;
+            display: block;
         }
 
         #clock {
