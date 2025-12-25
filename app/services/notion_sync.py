@@ -41,11 +41,13 @@ async def sync_notion_data():
         logger.info("Querying Notion Database...")
         query = await client.databases.query(database_id=database_id)
         results = query.get("results", [])
+        logger.info(f"Notion returned {len(results)} results.")
         
         active_slides = []
         active_filenames = set()
         
         now = datetime.now(timezone.utc)
+        logger.info(f"Current UTC time: {now}")
 
         for page in results:
             props = page.get("properties", {})
@@ -57,6 +59,7 @@ async def sync_notion_data():
             # Check Active Checkbox
             is_active_checkbox = props.get(PROP_ACTIVE, {}).get("checkbox", True)
             if not is_active_checkbox:
+                logger.info(f"Skipping '{title}': Active checkbox is unchecked.")
                 continue
 
             # Check Dates
@@ -80,8 +83,10 @@ async def sync_notion_data():
 
             # Logic: If start_date is set, must be after it. If end_date is set, must be before it.
             if start_date and now < start_date:
+                logger.info(f"Skipping '{title}': Starts in future ({start_date}).")
                 continue
             if end_date and now > end_date:
+                logger.info(f"Skipping '{title}': Ended in past ({end_date}).")
                 continue
 
             # Extract Media
