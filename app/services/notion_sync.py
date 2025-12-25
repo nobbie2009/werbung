@@ -124,12 +124,16 @@ async def sync_notion_data():
             desc_list = props.get(PROP_DESCRIPTION, {}).get("rich_text", [])
             description = "".join([t["plain_text"] for t in desc_list])
 
+            # Skip if no media
+            if not local_filename:
+                continue
+
             slide = {
                 "id": page["id"],
                 "title": title,
                 "description": description,
                 "type": media_type,
-                "src": f"/media/{local_filename}" if local_filename else None,
+                "src": f"/media/{local_filename}",
                 "duration": duration
             }
             active_slides.append(slide)
