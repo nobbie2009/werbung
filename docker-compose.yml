@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: digital-signage-middleware
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app/data:/app/data
+    environment:
+      - NOTION_TOKEN=secret_xxxxxxxxxxxxxxxxxxxx
+      - NOTION_DATABASE_ID=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+      - SYNC_INTERVAL=300
+    # network_mode: bridge # Standard for Synology
+
