@@ -68,9 +68,15 @@ async def sync_notion_data():
                 start_str = date_prop.get("start")
                 end_str = date_prop.get("end")
                 if start_str:
-                    start_date = datetime.fromisoformat(start_str.replace("Z", "+00:00"))
+                    d = datetime.fromisoformat(start_str.replace("Z", "+00:00"))
+                    if d.tzinfo is None:
+                         d = d.replace(tzinfo=timezone.utc)
+                    start_date = d
                 if end_str:
-                    end_date = datetime.fromisoformat(end_str.replace("Z", "+00:00"))
+                    d = datetime.fromisoformat(end_str.replace("Z", "+00:00"))
+                    if d.tzinfo is None:
+                         d = d.replace(tzinfo=timezone.utc)
+                    end_date = d
 
             # Logic: If start_date is set, must be after it. If end_date is set, must be before it.
             if start_date and now < start_date:
