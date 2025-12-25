@@ -149,10 +149,15 @@
                 el.autoplay = true;
                 el.playsInline = true;
                 el.classList.add('media-item');
-            } else {
+            } else if (item.type === 'image' && item.src) {
                 el = document.createElement('img');
                 el.src = item.src;
                 el.classList.add('media-item');
+            } else {
+                // Text only (container div)
+                el = document.createElement('div');
+                el.classList.add('media-item');
+                // Optional: add a class for specific text-only styling if needed
             }
             return el;
         }
