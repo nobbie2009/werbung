@@ -15,17 +15,14 @@ Es gibt zwei Wege zur Installation:
 
 ### Methode 1: Automatisch (Auf Proxmox Host)
 
-1.  Lade das Script `install_on_proxmox.sh` auf deinen Proxmox Host (z.B. per SCP oder Copy-Paste).
-2.  Mache es ausführbar:
-    ```bash
-    chmod +x install_on_proxmox.sh
-    ```
-3.  Führe es aus:
-    ```bash
-    ./install_on_proxmox.sh
-    ```
-4.  Folge den Anweisungen. Das Script fragt dich nach Container-Details und Notion-Keys.
-5.  Am Ende wird dir die IP-Adresse angezeigt.
+Führe folgenden Befehl in deiner Proxmox-Shell aus:
+
+```bash
+bash -c "$(wget -qLO - https://raw.githubusercontent.com/nobbie2009/werbung/main/install_on_proxmox.sh)"
+```
+
+Dieser Befehl lädt das Installations-Script herunter und führt es direkt aus.
+Alternativ kannst du das Script auch manuell herunterladen:
 
 ### Methode 2: Manuell im Container
 
