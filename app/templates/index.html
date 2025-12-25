@@ -57,12 +57,70 @@
         <div id="loading">Loading content...</div>
         <!-- Media elements will be injected here or managed here -->
     </div>
+    <div id="screensaver"
+        style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 999; background: black;">
+    </div>
 
     <script>
         const container = document.getElementById('container');
         const loading = document.getElementById('loading');
+        const screensaverEl = document.getElementById('screensaver');
+
         let playlist = [];
         let currentIndex = 0;
+        let settings = {};
+        let idleTimer;
+
+        async function loadSettings() {
+            try {
+                const res = await fetch('/api/settings');
+                settings = await res.json();
+                applySettings();
+            } catch (e) {
+                console.error("Failed to load settings", e);
+            }
+        }
+
+        function applySettings() {
+            document.body.style.backgroundColor = settings.background_color || '#000';
+
+            // Apply custom CSS
+            if (settings.custom_css) {
+                const style = document.createElement('style');
+                style.textContent = settings.custom_css;
+                document.head.appendChild(style);
+            }
+
+            resetIdleTimer();
+        }
+
+        function showScreensaver() {
+            if (!settings.screensaver_enabled) return;
+
+            screensaverEl.style.display = 'block';
+            if (settings.screensaver_type === 'image') {
+                screensaverEl.style.background = 'url(https://source.unsplash.com/random/1920x1080) no-repeat center center fixed';
+                screensaverEl.style.backgroundSize = 'cover';
+            } else {
+                screensaverEl.style.background = 'black';
+            }
+        }
+
+        function hideScreensaver() {
+            screensaverEl.style.display = 'none';
+        }
+
+        function resetIdleTimer() {
+            hideScreensaver();
+            if (idleTimer) clearTimeout(idleTimer);
+            if (settings.screensaver_enabled && settings.screensaver_timeout) {
+                idleTimer = setTimeout(showScreensaver, settings.screensaver_timeout * 1000);
+            }
+        }
+
+        // Reset idle timer on any interaction (though this is a passive display, maybe just playlist end?)
+        // For digital signage, usually we don't expect interaction. 
+        // But if we want it to act as screensaver when NO playlist items:
 
         async function fetchPlaylist() {
             try {
@@ -96,39 +154,41 @@
         }
 
         async function playLoop() {
+            // Check settings occasionally?
+            if (currentIndex === 0) await loadSettings();
+
             // Refresh playlist at start of loop
             const newPlaylist = await fetchPlaylist();
 
             if (newPlaylist.length > 0) {
                 playlist = newPlaylist;
                 loading.style.display = 'none';
+                hideScreensaver(); // Content available
             }
 
             if (playlist.length === 0) {
                 loading.style.display = 'block';
-                loading.innerText = "No active content found. Retrying in 10s...";
+                loading.innerText = "No active content found.";
+
+                // If NO content, maybe force screensaver?
+                if (settings.screensaver_enabled) showScreensaver();
+
                 await wait(10000);
-                playLoop(); // Recursion but with delay is fine
+                playLoop();
                 return;
             }
 
             // Logic to cycle
-            // If index out of bounds, reset
             if (currentIndex >= playlist.length) {
                 currentIndex = 0;
-                // Optionally reload page to clear memory leaks?
-                // window.location.reload(); 
             }
 
             const item = playlist[currentIndex];
             const nextIndex = (currentIndex + 1) % playlist.length;
 
-            // Improve transition: Preload next item? 
-            // For MVP, just swap.
-
             const el = createMediaElement(item);
-            el.classList.add('active'); // Start visible? Or fade in?
-            container.innerHTML = ''; // Clear previous
+            el.classList.add('active');
+            container.innerHTML = '';
             container.appendChild(el);
 
             // Calculate Duration
@@ -138,9 +198,7 @@
                 // Wait for video end
                 await new Promise(resolve => {
                     el.onended = resolve;
-                    el.onerror = resolve; // Skip if error
-                    // Fallback timeout just in case
-                    // setTimeout(resolve, 60000); 
+                    el.onerror = resolve;
                 });
             } else {
                 await wait(duration);

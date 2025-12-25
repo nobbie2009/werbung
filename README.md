@@ -7,13 +7,33 @@ Dieses Projekt ist eine Middleware für Digital Signage, die als FastAPI-Anwendu
 - Ein Proxmox Container (LXC) oder eine VM (Debian/Ubuntu empfohlen).
 - `git` und `curl` sollten installiert sein (werden aber auch vom Setup-Script geprüft).
 
-## Installation auf Proxmox
+## Installation
+
+Es gibt zwei Wege zur Installation:
+1. **Automatisch auf Proxmox Host**: Erstellt Container und installiert alles.
+2. **Manuell im Container**: Wenn du schon einen Container hast.
+
+### Methode 1: Automatisch (Auf Proxmox Host)
+
+1.  Lade das Script `install_on_proxmox.sh` auf deinen Proxmox Host (z.B. per SCP oder Copy-Paste).
+2.  Mache es ausführbar:
+    ```bash
+    chmod +x install_on_proxmox.sh
+    ```
+3.  Führe es aus:
+    ```bash
+    ./install_on_proxmox.sh
+    ```
+4.  Folge den Anweisungen. Das Script fragt dich nach Container-Details und Notion-Keys.
+5.  Am Ende wird dir die IP-Adresse angezeigt.
+
+### Methode 2: Manuell im Container
 
 1.  Verbinde dich per SSH mit deinem Proxmox-Container.
 2.  Klone dieses Repository in den gewünschten Ordner (z.B. `/opt/werbung`):
     ```bash
     cd /opt
-    git clone https://github.com/nobbie2009/werbung
+    git clone https://github.com/nobbie2009/werbung werbung
     cd werbung
     ```
 3.  Führe das Setup-Script aus:
@@ -29,10 +49,20 @@ Das Setup-Script wird außerdem:
 - Den `update`-Befehl systemweit einrichten.
 - Die Anwendung starten.
 
-## Nutzung des Update-Befehls
+## Nutzung
 
-Nach der erfolgreichen Installation kannst du jederzeit per SSH den Befehl `update` eingeben, um die Anwendung zu aktualisieren:
+### Web Player
+Öffne `http://<CONTAINER_IP>:8000` im Browser (z.B. auf dem TV/Raspberry Pi).
 
+### Admin Backend
+Öffne `http://<CONTAINER_IP>:8000/admin` um Einstellungen zu ändern:
+- **Theme**: Hell/Dunkel
+- **Hintergrund**: Farbe anpassen
+- **Screensaver**: Aktivieren, Timeout und Typ wählen (Schwarz oder Zufallsbild)
+- **Custom CSS**: Eigene Styles injizieren
+
+### Updates
+Verbinde dich per SSH in den Container und gib ein:
 ```bash
 update
 ```
@@ -43,9 +73,9 @@ Dieser Befehl führt folgende Schritte aus:
 3.  Baut die Container neu und startet sie (`docker compose up -d --build`).
 4.  Bereinigt nicht mehr benötigte Docker-Images (`docker image prune`).
 
-## Konfiguration
+## Konfiguration (Manuell)
 
-Die Konfiguration erfolgt über Umgebungsvariablen in der `.env` Datei oder direkt in der `docker-compose.yml`.
+Die Konfiguration erfolgt über Umgebungsvariablen in der `.env` Datei, die Einstellungen für die Anzeige über das Admin-Panel.
 
 | Variable | Beschreibung |
 | :--- | :--- |
