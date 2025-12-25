@@ -61,3 +61,21 @@ Die Konfiguration erfolgt über Umgebungsvariablen in der `.env` Datei oder dire
 | `NOTION_TOKEN` | Dein Notion Integration Token |
 | `NOTION_DATABASE_ID` | Die ID der Notion Datenbank |
 | `SYNC_INTERVAL` | Intervall für die Synchronisation in Sekunden |
+
+## Notion Datenbank Struktur
+
+Damit die Anwendung die Inhalte korrekt aus Notion lesen kann, muss die Datenbank folgende Spalten (Properties) enthalten. Die Namen müssen exakt übereinstimmen (Groß-/Kleinschreibung beachten!):
+
+| Spaltenname | Typ | Beschreibung |
+| :--- | :--- | :--- |
+| **Name** | `Title` | Der Name des Beitrags (wird als Titel angezeigt). |
+| **Media** | `Files & Media` | Hier muss das Bild oder Video hochgeladen werden (nur die erste Datei wird verwendet). |
+| **Active** | `Checkbox` | Wenn angehakt, wird der Inhalt angezeigt. Zum Pausieren einfach Haken entfernen. |
+| **Start** | `Date` | Datumsfeld. Kann einen Start- und optional einen Endzeitpunkt haben. <br> - **Nur Start**: Aktiv ab diesem Zeitpunkt. <br> - **Start & Ende**: Aktiv nur in diesem Zeitraum. <br> - **Leer**: Immer aktiv (wenn `Active` angehakt). |
+| **Duration** | `Number` | Anzeigedauer in Sekunden (Standard: 10). |
+| **Description** | `Text` | (Optional) Zusätzliche Beschreibung. |
+
+### Hinweise zu Medien
+- Unterstützte Bildformate: `.jpg`, `.png`, etc.
+- Unterstützte Videoformate: `.mp4`, `.mov`, `.webm`
+- Videos werden automatisch erkannt und die Anzeigedauer wird ignoriert (Video spielt einmal komplett).
