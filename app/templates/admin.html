@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,22 +14,39 @@
             max-width: 800px;
             margin: 0 auto;
         }
-        h1 { margin-bottom: 2rem; }
+
+        h1 {
+            margin-bottom: 2rem;
+        }
+
         .card {
             background: white;
             padding: 2rem;
             border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
-        .form-group { margin-bottom: 1.5rem; }
-        label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
-        input[type="text"], input[type="number"], select, textarea {
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
             width: 100%;
             padding: 0.5rem;
             border: 1px solid #d1d5db;
             border-radius: 4px;
             box-sizing: border-box;
         }
+
         button {
             background-color: #2563eb;
             color: white;
@@ -38,22 +56,45 @@
             cursor: pointer;
             font-size: 1rem;
         }
-        button:hover { background-color: #1d4ed8; }
+
+        button:hover {
+            background-color: #1d4ed8;
+        }
+
         #message {
             margin-top: 1rem;
             padding: 1rem;
             border-radius: 4px;
             display: none;
         }
-        .success { background-color: #d1fae5; color: #065f46; }
-        .error { background-color: #fee2e2; color: #991b1b; }
+
+        .success {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .error {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
     </style>
 </head>
+
 <body>
     <h1>Digital Signage Settings</h1>
-    
+
+    <div class="card" style="margin-bottom: 2rem;">
+        <h2 style="margin-top: 0;">Maintenance</h2>
+        <div style="display: flex; gap: 1rem;">
+            <button type="button" id="btnUpdate" style="background-color: #059669;">Update Content Now</button>
+            <button type="button" id="btnBackup" style="background-color: #4b5563;">Download Backup</button>
+        </div>
+        <div id="maintMessage" style="margin-top: 1rem; display: none; padding: 0.5rem; border-radius: 4px;"></div>
+    </div>
+
     <div class="card">
         <form id="settingsForm">
+            <h2>General Settings</h2>
             <div class="form-group">
                 <label for="theme">Theme</label>
                 <select id="theme" name="theme">
@@ -67,6 +108,52 @@
                 <input type="color" id="background_color" name="background_color" value="#000000">
             </div>
 
+            <!-- Corporate Identity -->
+            <hr>
+            <h3>Corporate Identity</h3>
+            <div class="form-group">
+                <label for="logo_url">Logo URL (http... or /media/...)</label>
+                <input type="text" id="logo_url" name="logo_url" placeholder="https://example.com/logo.png">
+            </div>
+
+            <!-- Contact Info -->
+            <hr>
+            <h3>Contact Info (Footer)</h3>
+            <div class="form-group">
+                <label for="contact_name">Company Name</label>
+                <input type="text" id="contact_name" name="contact_name">
+            </div>
+            <div class="form-group">
+                <label for="contact_phone">Phone Number</label>
+                <input type="text" id="contact_phone" name="contact_phone">
+            </div>
+            <div class="form-group">
+                <label for="contact_homepage">Homepage URL (for QR Code)</label>
+                <input type="text" id="contact_homepage" name="contact_homepage">
+            </div>
+
+            <!-- Countdown -->
+            <hr>
+            <h3>Countdown Overlay</h3>
+            <div class="form-group">
+                <label for="countdown_enabled">Enable Countdown</label>
+                <select id="countdown_enabled" name="countdown_enabled">
+                    <option value="false">No</option>
+                    <option value="true">Yes</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="countdown_title">Event Title</label>
+                <input type="text" id="countdown_title" name="countdown_title">
+            </div>
+            <div class="form-group">
+                <label for="countdown_target">Target Date/Time</label>
+                <input type="datetime-local" id="countdown_target" name="countdown_target">
+            </div>
+
+            <!-- Screensaver -->
+            <hr>
+            <h3>Screensaver</h3>
             <div class="form-group">
                 <label for="screensaver_enabled">Screensaver Enabled</label>
                 <select id="screensaver_enabled" name="screensaver_enabled">
@@ -87,7 +174,9 @@
                     <option value="image">Random Image (Unsplash)</option>
                 </select>
             </div>
-            
+
+            <hr>
+            <h3>Advanced</h3>
             <div class="form-group">
                 <label for="custom_css">Custom CSS</label>
                 <textarea id="custom_css" name="custom_css" rows="5"></textarea>
@@ -101,19 +190,38 @@
     <script>
         const form = document.getElementById('settingsForm');
         const messageDiv = document.getElementById('message');
+        const maintMessage = document.getElementById('maintMessage');
+
+        // Toggle Password Visibility? No, but maybe generic helper
 
         // Load Settings
         async function loadSettings() {
             try {
                 const res = await fetch('/api/settings');
                 const data = await res.json();
-                
-                document.getElementById('theme').value = data.theme;
-                document.getElementById('background_color').value = data.background_color;
-                document.getElementById('screensaver_enabled').value = data.screensaver_enabled.toString();
-                document.getElementById('screensaver_timeout').value = data.screensaver_timeout;
-                document.getElementById('screensaver_type').value = data.screensaver_type;
-                document.getElementById('custom_css').value = data.custom_css;
+
+                // Helper to safely set values
+                const setVal = (id, val) => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = val !== undefined ? val : "";
+                };
+
+                setVal('theme', data.theme);
+                setVal('background_color', data.background_color);
+
+                setVal('logo_url', data.logo_url);
+                setVal('contact_name', data.contact_name);
+                setVal('contact_phone', data.contact_phone);
+                setVal('contact_homepage', data.contact_homepage);
+
+                setVal('countdown_enabled', data.countdown_enabled.toString());
+                setVal('countdown_title', data.countdown_title);
+                setVal('countdown_target', data.countdown_target);
+
+                setVal('screensaver_enabled', data.screensaver_enabled.toString());
+                setVal('screensaver_timeout', data.screensaver_timeout);
+                setVal('screensaver_type', data.screensaver_type);
+                setVal('custom_css', data.custom_css);
 
             } catch (err) {
                 console.error("Failed to load settings", err);
@@ -125,12 +233,12 @@
         // Save Settings
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const formData = new FormData(form);
             const jsonData = {};
-            
+
             formData.forEach((value, key) => {
-                if (key === 'screensaver_enabled') {
+                if (['screensaver_enabled', 'countdown_enabled'].includes(key)) {
                     jsonData[key] = value === 'true';
                 } else if (key === 'screensaver_timeout') {
                     jsonData[key] = parseInt(value);
@@ -145,7 +253,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(jsonData)
                 });
-                
+
                 if (res.ok) {
                     messageDiv.className = 'success';
                     messageDiv.textContent = 'Settings saved successfully!';
@@ -160,6 +268,32 @@
                 messageDiv.style.display = 'block';
             }
         });
+
+        // Maintenance Buttons
+        document.getElementById('btnUpdate').addEventListener('click', async () => {
+            maintMessage.style.display = 'block';
+            maintMessage.style.background = '#e5e7eb';
+            maintMessage.textContent = 'Triggering update...';
+            try {
+                const res = await fetch('/api/trigger_sync', { method: 'POST' });
+                if (res.ok) {
+                    maintMessage.style.background = '#d1fae5';
+                    maintMessage.textContent = 'Update triggered successfully.';
+                } else {
+                    throw new Error('Update failed');
+                }
+            } catch (e) {
+                maintMessage.style.background = '#fee2e2';
+                maintMessage.textContent = 'Update failed. Check logs.';
+            }
+            setTimeout(() => maintMessage.style.display = 'none', 5000);
+        });
+
+        document.getElementById('btnBackup').addEventListener('click', () => {
+            window.location.href = '/api/backup';
+        });
+
     </script>
 </body>
+
 </html>

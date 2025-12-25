@@ -49,6 +49,7 @@ app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 app.include_router(api.router, prefix="/api")
 app.include_router(settings.router, prefix="/api/settings")
+app.include_router(admin_actions.router)
 
 templates = Jinja2Templates(directory="app/templates")
 

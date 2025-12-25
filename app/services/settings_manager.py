@@ -14,7 +14,16 @@ DEFAULT_SETTINGS = {
     "screensaver_enabled": False,
     "screensaver_timeout": 300, # seconds
     "screensaver_type": "black", # black, image
-    "custom_css": ""
+    "custom_css": "",
+    # Corporate Identity & Contact
+    "logo_url": "",
+    "contact_name": "",
+    "contact_phone": "",
+    "contact_homepage": "",
+    # Countdown
+    "countdown_enabled": False,
+    "countdown_target": "", # ISO date string
+    "countdown_title": "Countdown"
 }
 
 class SettingsManager:
