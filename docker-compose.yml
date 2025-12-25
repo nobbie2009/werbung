@@ -10,8 +10,8 @@ services:
     volumes:
       - ./app/data:/app/data
     environment:
-      - NOTION_TOKEN=secret_xxxxxxxxxxxxxxxxxxxx
-      - NOTION_DATABASE_ID=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-      - SYNC_INTERVAL=300
+      - NOTION_TOKEN=${NOTION_TOKEN}
+      - NOTION_DATABASE_ID=${NOTION_DATABASE_ID}
+      - SYNC_INTERVAL=${SYNC_INTERVAL:-300}
     # network_mode: bridge # Standard for Synology
 
