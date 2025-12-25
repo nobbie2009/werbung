@@ -6,149 +6,390 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Digital Signage Player</title>
     <style>
+        :root {
+            --bg-color: #000;
+            --text-color: #fff;
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --footer-height: 12vh;
+            /* Slightly taller for readability */
+            --content-height: 88vh;
+        }
+
         body,
         html {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-family);
             overflow: hidden;
-            background-color: #000;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
-        #container {
+        /* --- Layout Structure --- */
+        #main-wrapper {
+            display: flex;
+            flex-direction: column;
             width: 100%;
             height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            z-index: 1;
         }
 
-        .media-item {
+        #content-area {
+            flex: 0 0 var(--content-height);
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        #footer {
+            flex: 0 0 var(--footer-height);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: linear-gradient(to top, #111, #222);
+            padding: 0 2rem;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.5);
+            z-index: 100;
+        }
+
+        /* --- Footer Components --- */
+        .footer-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            height: 100%;
+        }
+
+        #footer-left {
+            justify-content: flex-start;
+            flex: 1;
+        }
+
+        #footer-center {
+            justify-content: center;
+            flex: 1;
+        }
+
+        #footer-right {
+            justify-content: flex-end;
+            flex: 1;
+        }
+
+        #company-logo {
+            max-height: 70%;
+            width: auto;
+            border-radius: 4px;
+        }
+
+        #contact-info {
+            font-size: 1.1rem;
+            line-height: 1.4;
+        }
+
+        #contact-info span {
+            display: block;
+        }
+
+        #contact-name {
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        #qr-container img {
+            height: 80%;
+            /* of footer height */
+            width: auto;
+            border: 2px solid white;
+            border-radius: 4px;
+        }
+
+        #clock {
+            font-size: 2.5rem;
+            font-weight: 200;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* --- Content Layouts --- */
+        .media-container {
+            width: 100%;
+            height: 100%;
             position: absolute;
             top: 0;
             left: 0;
+            display: flex;
+            /* Default: Standard centered */
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Standard Layout (Image/Video Full) */
+        .layout-standard img,
+        .layout-standard video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            /* Show full image, black bars if needed. Or cover? User said "when no image ... larger font", implying standard has image. */
+            object-fit: cover;
+            /* Usually prefer cover for signage */
+        }
+
+        /* Text Only Layout */
+        .layout-text-only {
+            background: var(--bg-color);
+            padding: 4rem;
+            box-sizing: border-box;
+            text-align: center;
+            flex-direction: column;
+        }
+
+        .layout-text-only h1 {
+            font-size: 5vw;
+            /* Responsive font sizing */
+            margin: 0 0 1rem 0;
+            line-height: 1.1;
+        }
+
+        .layout-text-only p {
+            font-size: 3vw;
+            color: #ccc;
+        }
+
+        /* Split Layout (Image Left, Text Right) */
+        .layout-split {
+            flex-direction: row;
+        }
+
+        .layout-split .media-side {
+            flex: 1;
+            height: 100%;
+        }
+
+        .layout-split .media-side img,
+        .layout-split .media-side video {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            /* or contain */
-            opacity: 0;
-            transition: opacity 1s ease-in-out;
-            z-index: 0;
         }
 
-        .active {
-            opacity: 1;
-            z-index: 1;
+        .layout-split .text-side {
+            flex: 1;
+            height: 100%;
+            padding: 3rem;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: rgba(20, 20, 20, 0.9);
         }
 
-        #loading {
-            color: #fff;
-            font-size: 2rem;
-            z-index: 10;
-        }
-
-        #overlay {
-            position: absolute;
-            bottom: 50px;
-            left: 50px;
-            z-index: 999;
-            /* Very high z-index to ensure visibility */
-            color: white;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-            background: rgba(0, 0, 0, 0.3);
-            padding: 20px;
-            border-radius: 10px;
-            max-width: 80%;
-            display: none;
-            pointer-events: none;
-            /* Let clicks pass through */
-        }
-
-        #title {
-            margin: 0;
+        .layout-split h1 {
             font-size: 3rem;
-            font-weight: bold;
+            margin-bottom: 1rem;
         }
 
-        #description {
-            margin-top: 10px;
+        .layout-split p {
             font-size: 1.5rem;
+            line-height: 1.6;
         }
 
-        #screensaver {
+
+        /* --- Overlays & Countdown --- */
+        #countdown-overlay {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: rgba(185, 28, 28, 0.9);
+            /* Red-ish */
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            text-align: center;
             display: none;
-            position: absolute;
+            z-index: 500;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        #countdown-title {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        #countdown-timer {
+            font-size: 2rem;
+            font-weight: bold;
+            font-family: monospace;
+            margin-top: 0.2rem;
+        }
+
+        /* Screensaver */
+        #screensaver {
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             z-index: 2000;
-            /* Above everything */
+            display: none;
             background: black;
+        }
+
+        /* Loading */
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #666;
+            font-size: 1.5rem;
         }
     </style>
 </head>
 
 <body>
 
-    <div id="container">
-        <div id="loading">Loading content...</div>
+    <div id="main-wrapper">
+        <!-- Main Content (Slide) -->
+        <div id="content-area">
+            <div id="loading">Loading content...</div>
+        </div>
+
+        <!-- Footer -->
+        <div id="footer">
+            <div id="footer-left" class="footer-section">
+                <!-- Injected via JS -->
+            </div>
+
+            <div id="footer-center" class="footer-section">
+                <!-- QR Code -->
+            </div>
+
+            <div id="footer-right" class="footer-section">
+                <div id="clock">12:00</div>
+            </div>
+        </div>
     </div>
 
-    <div id="overlay">
-        <h1 id="title"></h1>
-        <p id="description"></p>
+    <!-- Floating Elements -->
+    <div id="countdown-overlay">
+        <div id="countdown-title">Countdown</div>
+        <div id="countdown-timer">00d 00h 00m</div>
     </div>
 
     <div id="screensaver"></div>
 
     <script>
-        const container = document.getElementById('container');
+        const contentArea = document.getElementById('content-area');
         const loading = document.getElementById('loading');
+        const footerLeft = document.getElementById('footer-left');
+        const footerCenter = document.getElementById('footer-center');
+        const clockEl = document.getElementById('clock');
         const screensaverEl = document.getElementById('screensaver');
-        const overlay = document.getElementById('overlay');
-        const titleEl = document.getElementById('title');
-        const descEl = document.getElementById('description');
+
+        const countdownEl = document.getElementById('countdown-overlay');
+        const countdownTimerEl = document.getElementById('countdown-timer');
+        const countdownTitleEl = document.getElementById('countdown-title');
 
         let playlist = [];
         let currentIndex = 0;
         let settings = {};
         let idleTimer;
+        let countdownInterval;
 
+        // --- Helpers ---
+        const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        // --- Clock ---
+        setInterval(() => {
+            const now = new Date();
+            clockEl.textContent = now.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+        }, 1000);
+
+        // --- Settings & Footer ---
         async function loadSettings() {
             try {
                 const res = await fetch('/api/settings');
                 settings = await res.json();
                 applySettings();
-            } catch (e) {
-                console.error("Failed to load settings", e);
-            }
+            } catch (e) { console.error("Settings load failed", e); }
         }
 
         function applySettings() {
-            document.body.style.backgroundColor = settings.background_color || '#000';
-
-            // Apply custom CSS
+            // Theme / CSS
+            document.documentElement.style.setProperty('--bg-color', settings.background_color || '#000');
             if (settings.custom_css) {
-                const existingStyle = document.getElementById('custom-css');
-                if (existingStyle) existingStyle.remove();
-
-                const style = document.createElement('style');
-                style.id = 'custom-css';
+                let style = document.getElementById('custom-css');
+                if (!style) {
+                    style = document.createElement('style');
+                    style.id = 'custom-css';
+                    document.head.appendChild(style);
+                }
                 style.textContent = settings.custom_css;
-                document.head.appendChild(style);
+            }
+
+            // Footer Left: Logo & Contact
+            let leftHtml = '';
+            if (settings.logo_url) {
+                leftHtml += `<img id="company-logo" src="${settings.logo_url}">`;
+            }
+            if (settings.contact_name || settings.contact_phone) {
+                leftHtml += `<div id="contact-info">
+                   <span id="contact-name">${settings.contact_name || ''}</span>
+                   <span>${settings.contact_phone || ''}</span>
+                </div>`;
+            }
+            footerLeft.innerHTML = leftHtml;
+
+            // Footer Center: QR Code
+            if (settings.contact_homepage) {
+                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&color=ffffff&bgcolor=000000&margin=0&data=${encodeURIComponent(settings.contact_homepage)}`;
+                footerCenter.innerHTML = `<div id="qr-container"><img src="${qrUrl}"></div>`;
+            } else {
+                footerCenter.innerHTML = '';
+            }
+
+            // Countdown
+            if (settings.countdown_enabled && settings.countdown_target) {
+                startCountdown(settings.countdown_target, settings.countdown_title);
+            } else {
+                countdownEl.style.display = 'none';
             }
 
             resetIdleTimer();
         }
 
+        // --- Countdown Logic ---
+        function startCountdown(targetDateIso, title) {
+            if (countdownInterval) clearInterval(countdownInterval);
+
+            const target = new Date(targetDateIso).getTime();
+            countdownTitleEl.textContent = title || "Event starts in";
+            countdownEl.style.display = 'block';
+
+            const update = () => {
+                const now = new Date().getTime();
+                const distance = target - now;
+
+                if (distance < 0) {
+                    countdownTimerEl.textContent = "STARTED";
+                    return;
+                }
+
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+
+                countdownTimerEl.textContent = `${days}d ${hours}h ${minutes}m`;
+            };
+
+            update();
+            countdownInterval = setInterval(update, 60000); // Minute precision enough?
+        }
+
+        // --- Screensaver ---
         function showScreensaver() {
             if (!settings.screensaver_enabled) return;
-
             screensaverEl.style.display = 'block';
             if (settings.screensaver_type === 'image') {
                 screensaverEl.style.background = 'url(https://source.unsplash.com/random/1920x1080) no-repeat center center fixed';
@@ -157,11 +398,7 @@
                 screensaverEl.style.background = 'black';
             }
         }
-
-        function hideScreensaver() {
-            screensaverEl.style.display = 'none';
-        }
-
+        function hideScreensaver() { screensaverEl.style.display = 'none'; }
         function resetIdleTimer() {
             hideScreensaver();
             if (idleTimer) clearTimeout(idleTimer);
@@ -170,46 +407,79 @@
             }
         }
 
+        // --- Playlist & Playback ---
         async function fetchPlaylist() {
             try {
-                const response = await fetch('/api/playlist');
-                const data = await response.json();
-                return data;
+                const res = await fetch('/api/playlist');
+                return await res.json();
             } catch (e) {
-                console.error("Failed to fetch playlist", e);
                 return [];
             }
         }
 
-        const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+        function createSlideElement(item) {
+            const container = document.createElement('div');
+            container.classList.add('media-container');
 
-        function createMediaElement(item) {
-            let el;
-            if (item.type === 'video') {
-                el = document.createElement('video');
-                el.src = item.src;
-                el.muted = true;
-                el.autoplay = true;
-                el.playsInline = true;
-                el.classList.add('media-item');
-            } else if (item.type === 'image' && item.src) {
-                el = document.createElement('img');
-                el.src = item.src;
-                el.classList.add('media-item');
-            } else {
-                // Text only (container div)
-                el = document.createElement('div');
-                el.classList.add('media-item');
+            // Determine Layout
+            let layout = item.layout || 'Standard';
+            // Force text-only layout if no media src
+            if (item.type === 'text' || !item.src) {
+                layout = 'Text Only';
             }
-            return el;
+
+            if (layout === 'Text Only') {
+                container.classList.add('layout-text-only');
+                const h1 = document.createElement('h1');
+                h1.textContent = item.title;
+                const p = document.createElement('p');
+                p.textContent = item.description;
+                container.appendChild(h1);
+                container.appendChild(p);
+
+            } else if (layout === 'Split') {
+                container.classList.add('layout-split');
+
+                // Media Side
+                const mediaDiv = document.createElement('div');
+                mediaDiv.classList.add('media-side');
+                const mediaEl = (item.type === 'video') ? document.createElement('video') : document.createElement('img');
+                mediaEl.src = item.src;
+                if (item.type === 'video') { mediaEl.muted = true; mediaEl.autoplay = true; mediaEl.playsInline = true; }
+                mediaDiv.appendChild(mediaEl);
+
+                // Text Side
+                const textDiv = document.createElement('div');
+                textDiv.classList.add('text-side');
+                textDiv.innerHTML = `<h1>${item.title}</h1><p>${item.description}</p>`;
+
+                container.appendChild(mediaDiv);
+                container.appendChild(textDiv);
+
+                return { element: container, media: mediaEl }; // Return media el for waiting logic
+
+            } else {
+                // Standard (Fullscreen Media)
+                container.classList.add('layout-standard');
+                const mediaEl = (item.type === 'video') ? document.createElement('video') : document.createElement('img');
+                mediaEl.src = item.src;
+                if (item.type === 'video') { mediaEl.muted = true; mediaEl.autoplay = true; mediaEl.playsInline = true; }
+                container.appendChild(mediaEl);
+
+                // Optional: Overlay for Standard (if text exists)
+                if (item.title || item.description) {
+                    // We could add an overlay div here similar to previous version if desired
+                    // But user specifically asked for "Text only -> larger font".
+                }
+                return { element: container, media: mediaEl };
+            }
+            return { element: container, media: null };
         }
 
         async function playLoop() {
-            // Reload settings at start of each loop
-            if (currentIndex === 0) await loadSettings();
+            if (currentIndex === 0) await loadSettings(); // Refresh settings each loop
 
             const newPlaylist = await fetchPlaylist();
-
             if (newPlaylist.length > 0) {
                 playlist = newPlaylist;
                 loading.style.display = 'none';
@@ -218,46 +488,31 @@
 
             if (playlist.length === 0) {
                 loading.style.display = 'block';
-                loading.innerText = "No active content found.";
+                loading.innerText = "No content available.";
                 if (settings.screensaver_enabled) showScreensaver();
                 await wait(10000);
                 playLoop();
                 return;
             }
 
-            if (currentIndex >= playlist.length) {
-                currentIndex = 0;
-            }
-
+            if (currentIndex >= playlist.length) currentIndex = 0;
             const item = playlist[currentIndex];
-            console.log("Playing:", item);
 
-            // Create media element
-            const el = createMediaElement(item);
-            el.classList.add('active');
+            const { element, media } = createSlideElement(item);
 
-            // Clear container and add new element
-            container.innerHTML = '';
-            container.appendChild(el);
+            // Swap content
+            contentArea.innerHTML = '';
+            contentArea.appendChild(element);
 
-            // Update Overlay
-            if (item.title || item.description) {
-                titleEl.textContent = item.title || "";
-                descEl.textContent = item.description || "";
-                overlay.style.display = 'block';
-            } else {
-                overlay.style.display = 'none';
-            }
-
-            // Duration logic
+            // Wait for duration
             let duration = (item.duration || 10) * 1000;
 
-            if (item.type === 'video') {
+            if (item.type === 'video' && media) {
                 await new Promise(resolve => {
-                    el.onended = resolve;
-                    el.onerror = resolve;
-                    // Fallback timeout for video
-                    setTimeout(resolve, duration + 5000);
+                    media.onended = resolve;
+                    media.onerror = resolve;
+                    // Safety timeout
+                    setTimeout(resolve, duration + 10000);
                 });
             } else {
                 await wait(duration);
@@ -267,8 +522,7 @@
             playLoop();
         }
 
-        // Initialize
-        console.log("App starting...");
+        // --- Init ---
         playLoop();
 
     </script>

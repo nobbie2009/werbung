@@ -11,12 +11,13 @@ logger = logging.getLogger(__name__)
 
 # Constants for Notion Properties
 PROP_NAME = "Name"
-PROP_DESCRIPTION = "Description"
-PROP_MEDIA = "Media"
-PROP_START = "Start"
-PROP_END = "End"
-PROP_DURATION = "Duration"
-PROP_ACTIVE = "Active"
+PROPERTY_DESCRIPTION = "Description"
+PROPERTY_MEDIA = "Media"
+PROPERTY_START = "Start"
+PROPERTY_END = "End"
+PROPERTY_DURATION = "Duration"
+PROPERTY_ACTIVE = "Active"
+PROPERTY_LAYOUT = "Layout" # New
 
 PLAYLIST_FILE = Path("/app/data/playlist.json")
 
@@ -57,13 +58,13 @@ async def sync_notion_data():
             title = title_list[0]["plain_text"] if title_list else "Untitled"
             
             # Check Active Checkbox
-            is_active_checkbox = props.get(PROP_ACTIVE, {}).get("checkbox", True)
+            is_active_checkbox = props.get(PROPERTY_ACTIVE, {}).get("checkbox", True)
             if not is_active_checkbox:
                 logger.info(f"Skipping '{title}': Active checkbox is unchecked.")
                 continue
 
             # Check Dates
-            date_prop = props.get(PROP_START, {}).get("date")
+            date_prop = props.get(PROPERTY_START, {}).get("date")
             start_date = None
             end_date = None
             
@@ -90,7 +91,7 @@ async def sync_notion_data():
                 continue
 
             # Extract Media
-            files = props.get(PROP_MEDIA, {}).get("files", [])
+            files = props.get(PROPERTY_MEDIA, {}).get("files", [])
             media_url = None
             media_type = "text"
             local_filename = None
@@ -123,11 +124,15 @@ async def sync_notion_data():
                         media_type = "image"
 
             # Extract Duration
-            duration = props.get(PROP_DURATION, {}).get("number", 10) or 10
+            duration = props.get(PROPERTY_DURATION, {}).get("number", 10) or 10
             
             # Extract Description
-            desc_list = props.get(PROP_DESCRIPTION, {}).get("rich_text", [])
+            desc_list = props.get(PROPERTY_DESCRIPTION, {}).get("rich_text", [])
             description = "".join([t["plain_text"] for t in desc_list])
+
+            # Extract Layout
+            layout_select = props.get(PROPERTY_LAYOUT, {}).get("select")
+            layout = layout_select["name"] if layout_select else "Standard"
 
             slide = {
                 "id": page["id"],
@@ -135,7 +140,8 @@ async def sync_notion_data():
                 "description": description,
                 "type": media_type,
                 "src": f"/media/{local_filename}" if local_filename else None,
-                "duration": duration
+                "duration": duration,
+                "layout": layout
             }
             active_slides.append(slide)
 
