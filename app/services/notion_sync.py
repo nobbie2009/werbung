@@ -19,6 +19,7 @@ PROPERTY_END = "End"
 PROPERTY_DURATION = "Duration"
 PROPERTY_ACTIVE = "Active"
 PROPERTY_LAYOUT = "Layout" # New
+PROPERTY_ORDER = "Order" # Sort order
 
 PLAYLIST_FILE = Path("/app/data/playlist.json")
 
@@ -135,6 +136,9 @@ async def sync_notion_data():
             layout_select = props.get(PROPERTY_LAYOUT, {}).get("select")
             layout = layout_select["name"] if layout_select else "Standard"
 
+            # Extract Order
+            order = props.get(PROPERTY_ORDER, {}).get("number", 999) or 999
+
             slide = {
                 "id": page["id"],
                 "title": title,
@@ -142,9 +146,13 @@ async def sync_notion_data():
                 "type": media_type,
                 "src": f"/media/{local_filename}" if local_filename else None,
                 "duration": duration,
-                "layout": layout
+                "layout": layout,
+                "order": order
             }
             active_slides.append(slide)
+
+        # Sort by Order
+        active_slides.sort(key=lambda x: x["order"])
 
         # Write to playlist.json
         with open(PLAYLIST_FILE, "w") as f:
