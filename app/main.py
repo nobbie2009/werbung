@@ -8,7 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-from app.routers import api, settings
+from app.routers import api, settings, admin_actions
 from app.services.notion_sync import sync_notion_data
 
 # Configure Logging
