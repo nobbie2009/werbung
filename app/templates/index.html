@@ -634,9 +634,25 @@
 
             const { element, media } = createSlideElement(item, contentPos);
 
-            // Swap content
-            contentArea.innerHTML = '';
+            // Cross-Fade Logic
+            element.style.opacity = 0;
+            element.style.transition = 'opacity 1s ease-in-out';
             contentArea.appendChild(element);
+
+            // Trigger Fade In
+            requestAnimationFrame(() => {
+                element.style.opacity = 1;
+            });
+
+            // Fade Out Old
+            const oldElements = Array.from(contentArea.children).filter(el => el !== element && el.id !== 'loading');
+            oldElements.forEach(old => {
+                old.style.transition = 'opacity 1s ease-in-out';
+                old.style.opacity = 0;
+                setTimeout(() => {
+                    if (old.parentNode) old.parentNode.removeChild(old);
+                }, 1000);
+            });
 
             // Wait for duration
             let duration = (item.duration || 10) * 1000;
