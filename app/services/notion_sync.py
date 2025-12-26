@@ -137,11 +137,25 @@ async def sync_notion_data():
                 
                 if unsplash_url:
                     logger.info(f"Processing Unsplash Property: {unsplash_url}")
-                    # Extract ID from https://unsplash.com/photos/xxxx or just xxxx
                     try:
                         parsed = urlparse(unsplash_url)
-                        if "unsplash.com" in parsed.netloc and "/photos/" in parsed.path:
-                             photo_id = parsed.path.split("/photos/")[-1]
+                        if "unsplash.com" in parsed.netloc:
+                             # Extract ID from path. 
+                             # Formats: 
+                             # - /photos/ID
+                             # - /de/fotos/slug-ID
+                             # - /photos/slug-ID
+                             
+                             path_parts = parsed.path.strip("/").split("/")
+                             if not path_parts:
+                                 raise ValueError("Empty path")
+                                 
+                             last_segment = path_parts[-1]
+                             
+                             # If slugged (contains dashes), usually ID is the last part
+                             # ID usually doesn't contain dashes.
+                             photo_id = last_segment.split("-")[-1]
+                             
                              download_url = f"https://unsplash.com/photos/{photo_id}/download"
                              local_filename = f"unsplash_{photo_id}.jpg"
                              
@@ -155,7 +169,7 @@ async def sync_notion_data():
                                  logger.error(f"Failed to download Unsplash image: {download_url}")
                                  local_filename = None # Fallback to text
                         else:
-                             logger.warning(f"Invalid Unsplash URL format: {unsplash_url}. Expected format with '/photos/ID'.")
+                             logger.warning(f"Ignored non-Unsplash URL: {unsplash_url}")
                     except Exception as e:
                         logger.error(f"Error processing Unsplash url: {e}")
                         local_filename = None
