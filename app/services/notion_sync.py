@@ -20,6 +20,7 @@ PROPERTY_DURATION = "Duration"
 PROPERTY_ACTIVE = "Active"
 PROPERTY_LAYOUT = "Layout" # New
 PROPERTY_ORDER = "Order" # Sort order
+PROPERTY_UNSPLASH = "Unsplash" # Unsplash URL or ID
 
 PLAYLIST_FILE = Path("/app/data/playlist.json")
 
@@ -124,6 +125,36 @@ async def sync_notion_data():
                         media_type = "video"
                     else:
                         media_type = "image"
+            
+            # Unsplash Fallback
+            if not media_url:
+                unsplash_val = props.get(PROPERTY_UNSPLASH, {}).get("url") or props.get(PROPERTY_UNSPLASH, {}).get("rich_text", [])
+                unsplash_url = None
+                if isinstance(unsplash_val, list) and len(unsplash_val) > 0:
+                    unsplash_url = unsplash_val[0].get("plain_text")
+                elif isinstance(unsplash_val, str):
+                    unsplash_url = unsplash_val
+                
+                if unsplash_url:
+                    # Extract ID from https://unsplash.com/photos/xxxx or just xxxx
+                    # Simple heuristic: take last part of path
+                    try:
+                        parsed = urlparse(unsplash_url)
+                        if "unsplash.com" in parsed.netloc and "/photos/" in parsed.path:
+                             photo_id = parsed.path.split("/photos/")[-1]
+                             download_url = f"https://unsplash.com/photos/{photo_id}/download"
+                             local_filename = f"unsplash_{photo_id}.jpg"
+                             
+                             await file_manager.download_file(download_url, local_filename)
+                             active_filenames.add(local_filename)
+                             media_type = "image"
+                             # Update src for the slide logic below
+                             # But we need to handle this in the 'slide' dict construction
+                             pass 
+                        else:
+                             logger.warning(f"Invalid Unsplash URL: {unsplash_url}")
+                    except Exception as e:
+                        logger.error(f"Error processing Unsplash url: {e}")
 
             # Extract Duration
             duration = props.get(PROPERTY_DURATION, {}).get("number", 10) or 10
