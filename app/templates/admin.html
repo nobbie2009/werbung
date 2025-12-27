@@ -99,6 +99,7 @@
             Sicherung der Einstellungen erstellen.</p>
         <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
             <button type="button" id="btnUpdate" style="background-color: #059669;">Inhalte jetzt aktualisieren</button>
+            <button type="button" id="btnRefresh" style="background-color: #3b82f6;">Browser neu laden</button>
             <button type="button" id="btnSystemUpdate" style="background-color: #db2777;">System Update (Git)</button>
             <button type="button" id="btnBackup" style="background-color: #4b5563;">Backup herunterladen</button>
         </div>
@@ -352,6 +353,25 @@
             } catch (e) {
                 maintMessage.style.background = '#fee2e2';
                 maintMessage.textContent = 'Update fehlgeschlagen. Bitte Logs prüfen.';
+            }
+            setTimeout(() => maintMessage.style.display = 'none', 5000);
+        });
+
+        document.getElementById('btnRefresh').addEventListener('click', async () => {
+            maintMessage.style.display = 'block';
+            maintMessage.style.background = '#e5e7eb';
+            maintMessage.textContent = 'Sende Reload-Befehl...';
+            try {
+                const res = await fetch('/api/system/refresh', { method: 'POST' });
+                if (res.ok) {
+                    maintMessage.style.background = '#d1fae5';
+                    maintMessage.textContent = 'Befehl gesendet. Browser laden sich in ca. 30s neu.';
+                } else {
+                    throw new Error('Request failed');
+                }
+            } catch (e) {
+                maintMessage.style.background = '#fee2e2';
+                maintMessage.textContent = 'Fehler: ' + e.message;
             }
             setTimeout(() => maintMessage.style.display = 'none', 5000);
         });

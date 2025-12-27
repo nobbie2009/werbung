@@ -10,6 +10,8 @@ logger = logging.getLogger(__name__)
 
 # Store startup time as logical "version"
 STARTUP_TIME = int(time.time())
+# Refresh Token (force reload for clients)
+REFRESH_TOKEN = int(time.time())
 
 # Fetch Git Commit Hash
 COMMIT_HASH = "unknown"
@@ -24,11 +26,20 @@ except Exception as e:
 
 @router.get("/version")
 async def get_version():
-    """Returns server startup timestamp and git commit hash."""
+    """Returns server startup timestamp, git commit hash, and refresh token."""
     return {
         "version": STARTUP_TIME,
-        "commit": COMMIT_HASH
+        "commit": COMMIT_HASH,
+        "refresh_token": REFRESH_TOKEN
     }
+
+@router.post("/refresh")
+async def trigger_refresh():
+    """Updates the refresh token, causing all connected clients to reload."""
+    global REFRESH_TOKEN
+    REFRESH_TOKEN = int(time.time())
+    logger.info(f"Broadcast refresh triggered. New token: {REFRESH_TOKEN}")
+    return {"status": "success", "message": "Reload command sent to clients."}
 
 @router.post("/update")
 async def trigger_update():
