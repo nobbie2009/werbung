@@ -32,6 +32,12 @@ apt-get update
 echo ">> Installing Chromium and Unclutter..."
 apt-get install -y chromium-browser unclutter
 
+# 2.5 Remove Keyrings & Disable them
+echo ">> Removing existing keyrings to prevent popups..."
+rm -rf "$USER_HOME/.local/share/keyrings"
+mkdir -p "$USER_HOME/.local/share/keyrings"
+chown -R $SUDO_USER:$SUDO_USER "$USER_HOME/.local/share/keyrings"
+
 # 3. Create Kiosk Watchdog Script
 echo ">> Creating Startup Script ($KIOSK_SCRIPT)..."
 
@@ -60,6 +66,10 @@ while true; do
     --noerrdialogs \\
     --disable-infobars \\
     --kiosk \\
+    --password-store=basic \\
+    --no-first-run \\
+    --no-default-browser-check \\
+    --disable-restore-session-state \\
     --test-type \\
     --check-for-update-interval=31536000 \\
     "$TARGET_URL"
