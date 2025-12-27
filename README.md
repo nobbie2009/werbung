@@ -97,3 +97,20 @@ Damit die Anwendung die Inhalte korrekt aus Notion lesen kann, muss die Datenban
 - Unterstützte Bildformate: `.jpg`, `.png`, etc.
 - Unterstützte Videoformate: `.mp4`, `.mov`, `.webm`
 - Videos werden automatisch erkannt und die Anzeigedauer wird ignoriert (Video spielt einmal komplett).
+
+## 6. Client (Raspberry Pi) Setup
+
+Ein automatisches Script für die Einrichtung eines Raspberry Pi (RaspiOS Trixie/Bookworm) im Kiosk-Modus liegt bei.
+
+1.  Script auf den Pi kopieren/laden: `setup_client.sh`
+2.  Ausführen:
+    ```bash
+    sudo ./setup_client.sh
+    ```
+3.  Server-IP eingeben.
+4.  Der Pi installiert Chromium, richtet den Autostart ein und sorgt für einen nächtlichen Neustart.
+
+## 7. Updates & Versionierung
+
+-   **System Update**: Im Admin-Panel unter "Wartung" gibt es den Button "System Update (Git)". Dieser führt einen `git pull` durch und startet den Server-Prozess neu.
+-   **Auto-Refresh**: Alle verbundenen Browser erkennen den Neustart des Servers (anhand der Version/Timestamp) und laden die Seite automatisch neu. So werden Code-Änderungen sofort auf allen Screens live geschaltet.

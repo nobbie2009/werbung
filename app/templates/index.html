@@ -677,8 +677,25 @@
             playLoop();
         }
 
+        // --- Auto-Refresh (Version Check) ---
+        let currentVersion = null;
+        async function checkVersion() {
+            try {
+                const res = await fetch('/api/system/version');
+                const data = await res.json();
+                if (currentVersion === null) {
+                    currentVersion = data.version;
+                } else if (currentVersion !== data.version) {
+                    console.log("New system version detected. Reloading...");
+                    window.location.reload();
+                }
+            } catch (e) { console.error("Version check failed", e); }
+        }
+        setInterval(checkVersion, 30000); // Check every 30s
+
         // --- Init ---
         playLoop();
+        checkVersion(); // Initial check
 
     </script>
 </body>

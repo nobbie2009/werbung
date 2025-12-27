@@ -335,8 +335,54 @@
             setTimeout(() => maintMessage.style.display = 'none', 5000);
         });
 
+        document.getElementById('btnSystemUpdate').addEventListener('click', async () => {
+            if (!confirm("Wollen Sie wirklich ein System-Update (Git Pull) durchführen? Der Server startet danach neu.")) return;
+
+            maintMessage.style.display = 'block';
+            maintMessage.style.background = '#e5e7eb';
+            maintMessage.textContent = 'System Update läuft... Bitte warten...';
+
+            try {
+                const res = await fetch('/api/system/update', { method: 'POST' });
+                const data = await res.json();
+
+                if (res.ok) {
+                    maintMessage.style.background = '#d1fae5';
+                    maintMessage.textContent = 'Update erfolgreich! System startet neu. Bitte warten Sie ca. 30 Sekunden und laden Sie die Seite neu.';
+                } else {
+                    throw new Error(data.detail || 'Update failed');
+                }
+            } catch (e) {
+                maintMessage.style.background = '#fee2e2';
+                maintMessage.textContent = 'Update Fehler: ' + e.message;
+            }
+        });
+
         document.getElementById('btnBackup').addEventListener('click', () => {
             window.location.href = '/api/backup';
+        });
+
+        document.getElementById('btnSystemUpdate').addEventListener('click', async () => {
+            if (!confirm("Wollen Sie wirklich ein System-Update (Git Pull) durchführen? Der Server startet danach neu.")) return;
+
+            maintMessage.style.display = 'block';
+            maintMessage.style.background = '#e5e7eb';
+            maintMessage.textContent = 'System Update läuft... Bitte warten...';
+
+            try {
+                const res = await fetch('/api/system/update', { method: 'POST' });
+                const data = await res.json();
+
+                if (res.ok) {
+                    maintMessage.style.background = '#d1fae5';
+                    maintMessage.textContent = 'Update erfolgreich! System startet neu. Bitte warten Sie ca. 30 Sekunden und laden Sie die Seite neu.';
+                } else {
+                    throw new Error(data.detail || 'Update failed');
+                }
+            } catch (e) {
+                maintMessage.style.background = '#fee2e2';
+                maintMessage.textContent = 'Update Fehler: ' + e.message;
+            }
         });
 
     </script>

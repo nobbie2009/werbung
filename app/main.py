@@ -8,7 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-from app.routers import api, settings, admin_actions
+from app.routers import api, settings, admin_actions, system
 from app.services.notion_sync import sync_notion_data
 
 # Configure Logging
@@ -50,6 +50,7 @@ app.mount("/static", StaticFiles(directory="app/static"), name="static")
 app.include_router(api.router, prefix="/api")
 app.include_router(settings.router, prefix="/api/settings")
 app.include_router(admin_actions.router)
+app.include_router(system.router)
 
 templates = Jinja2Templates(directory="app/templates")
 
