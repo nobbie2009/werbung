@@ -70,7 +70,23 @@ Dieser Befehl führt folgende Schritte aus:
 3.  Baut die Container neu und startet sie (`docker compose up -d --build`).
 4.  Bereinigt nicht mehr benötigte Docker-Images (`docker image prune`).
 
-## Konfiguration (Manuell)
+4.  Bereinigt nicht mehr benötigte Docker-Images (`docker image prune`).
+
+## 8. Google Kalender & Caching
+
+### Google Kalender Integration
+Der Countdown kann nun automatisch aus einem Google Kalender gespeist werden.
+1.  Gehen Sie in die Google Kalender Einstellungen.
+2.  Wählen Sie den Kalender aus -> "Kalender integrieren".
+3.  Kopieren Sie die **Privatadresse im iCal-Format**.
+4.  Fügen Sie diese im Admin-Panel unter "Wartung & Aktionen" -> "Countdown" -> "Quelle: Google Kalender" ein.
+5.  (Optional) Setzen Sie ein Stichwort (Filter), damit nur bestimmte Termine (z.B. "Eröffnung") gezählt werden.
+
+### Offline-Modus & Caching
+Der Player nutzt nun modernste Web-Technologien (Service Worker), um Inhalte lokal zu speichern.
+-   Bilder und Videos werden nach dem ersten Laden im Browser-Cache gehalten.
+-   Bei Internet-Ausfall läuft die Anzeige weiter (sofern die Medien einmal geladen wurden).
+-   Mit dem Button **"Browser neu laden"** im Admin-Panel können Sie den Cache auf allen Geräten zwangsweise erneuern.
 
 Die Konfiguration erfolgt über Umgebungsvariablen in der `.env` Datei, die Einstellungen für die Anzeige über das Admin-Panel.
 

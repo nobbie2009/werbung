@@ -185,15 +185,44 @@
                     <option value="true">Ja</option>
                 </select>
             </div>
+
             <div class="form-group">
-                <label for="countdown_title">Titel des Ereignisses</label>
-                <input type="text" id="countdown_title" name="countdown_title" placeholder="Event beginnt in">
-                <div class="help-text">Wird über dem Timer angezeigt.</div>
+                <label for="countdown_mode">Quelle</label>
+                <select id="countdown_mode" name="countdown_mode">
+                    <option value="manual">Manuell eingeben</option>
+                    <option value="calendar">Google Kalender (iCal)</option>
+                </select>
             </div>
-            <div class="form-group">
-                <label for="countdown_target">Zielzeitpunkt</label>
-                <input type="datetime-local" id="countdown_target" name="countdown_target">
-                <div class="help-text">Datum und Uhrzeit, bis zu der heruntergezählt wird.</div>
+
+            <!-- Manual Settings -->
+            <div id="countdown_manual_settings">
+                <div class="form-group">
+                    <label for="countdown_title">Titel des Ereignisses</label>
+                    <input type="text" id="countdown_title" name="countdown_title" placeholder="Event beginnt in">
+                    <div class="help-text">Wird über dem Timer angezeigt.</div>
+                </div>
+                <div class="form-group">
+                    <label for="countdown_target">Zielzeitpunkt</label>
+                    <input type="datetime-local" id="countdown_target" name="countdown_target">
+                    <div class="help-text">Datum und Uhrzeit, bis zu der heruntergezählt wird.</div>
+                </div>
+            </div>
+
+            <!-- Calendar Settings -->
+            <div id="countdown_calendar_settings" style="display: none;">
+                <div class="form-group">
+                    <label for="calendar_url">iCal Adresse (Google Kalender)</label>
+                    <input type="text" id="calendar_url" name="calendar_url"
+                        placeholder="https://calendar.google.com/calendar/ical/.../basic.ics">
+                    <div class="help-text">Die <strong>GEHEIMADRESSE</strong> im iCal-Format aus den Google Kalender
+                        Einstellungen.</div>
+                </div>
+                <div class="form-group">
+                    <label for="calendar_filter">Filter-Stichwort (Optional)</label>
+                    <input type="text" id="calendar_filter" name="calendar_filter" placeholder="z.B. Eröffnung">
+                    <div class="help-text">Wenn gesetzt, wird nur das nächste Event gezählt, das dieses Wort im Titel
+                        hat. Sonst das nächste beliebige Event.</div>
+                </div>
             </div>
 
             <!-- Screensaver -->
@@ -243,6 +272,22 @@
         const messageDiv = document.getElementById('message');
         const maintMessage = document.getElementById('maintMessage');
 
+        // Toggle settings visibility based on mode
+        const modeSelect = document.getElementById('countdown_mode');
+        const manualDiv = document.getElementById('countdown_manual_settings');
+        const calendarDiv = document.getElementById('countdown_calendar_settings');
+
+        function updateVisibility() {
+            if (modeSelect.value === 'calendar') {
+                manualDiv.style.display = 'none';
+                calendarDiv.style.display = 'block';
+            } else {
+                manualDiv.style.display = 'block';
+                calendarDiv.style.display = 'none';
+            }
+        }
+        modeSelect.addEventListener('change', updateVisibility);
+
         // Load Settings
         async function loadSettings() {
             try {
@@ -266,13 +311,19 @@
                 setVal('contact_homepage', data.contact_homepage);
 
                 setVal('countdown_enabled', data.countdown_enabled.toString());
+                setVal('countdown_mode', data.countdown_mode || "manual");
                 setVal('countdown_title', data.countdown_title);
                 setVal('countdown_target', data.countdown_target);
+
+                setVal('calendar_url', data.calendar_url);
+                setVal('calendar_filter', data.calendar_filter);
 
                 setVal('screensaver_enabled', data.screensaver_enabled.toString());
                 setVal('screensaver_timeout', data.screensaver_timeout);
                 setVal('screensaver_type', data.screensaver_type);
                 setVal('custom_css', data.custom_css);
+
+                updateVisibility();
 
             } catch (err) {
                 console.error("Fehler beim Laden der Einstellungen", err);

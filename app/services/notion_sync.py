@@ -117,14 +117,20 @@ async def sync_notion_data():
                     local_filename = f"{page['id']}{ext}"
                     
                     # Download
-                    await file_manager.download_file(media_url, local_filename)
-                    active_filenames.add(local_filename)
+                    logger.info(f"Downloading Media: {media_url} -> {local_filename}")
+                    download_success = await file_manager.download_file(media_url, local_filename)
                     
-                    # Determine type
-                    if ext.lower() in ['.mp4', '.mov', '.webm']:
-                        media_type = "video"
+                    if download_success:
+                        active_filenames.add(local_filename)
+                        # Determine type
+                        if ext.lower() in ['.mp4', '.mov', '.webm']:
+                            media_type = "video"
+                        else:
+                            media_type = "image"
                     else:
-                        media_type = "image"
+                        logger.error(f"Download failed for {local_filename}, falling back to description-only.")
+                        local_filename = None # Prevents showing broken image
+                        media_type = "text"
             
             # Unsplash Fallback
             if not media_url:
