@@ -27,6 +27,8 @@ DEFAULT_SETTINGS = {
     "calendar_url": "", # iCal URL
     "calendar_filter": "", # Keyword filter
     "countdown_title": "Countdown",
+    "countdown_show_timer": True,
+    "countdown_show_date": True,
     # Appearance
     "font_scale": 100 # Percentage
 }
