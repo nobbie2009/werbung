@@ -21,10 +21,27 @@
             padding: 0;
             width: 100%;
             height: 100%;
+            background-color: #111;
+            /* Outer letterbox color */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        #viewport-container {
+            width: 100%;
+            max-width: 177.78vh;
+            /* 16:9 based on height */
+            height: 56.25vw;
+            /* 16:9 based on width */
+            max-height: 100%;
             background-color: var(--bg-color);
             color: var(--text-color);
             font-family: var(--font-family);
+            position: relative;
             overflow: hidden;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
         }
 
         /* --- Layout Structure --- */
@@ -342,35 +359,37 @@
 
 <body>
 
-    <div id="main-wrapper">
-        <!-- Main Content (Slide) -->
-        <div id="content-area">
-            <div id="loading">Loading content...</div>
+    <div id="viewport-container">
+        <div id="main-wrapper">
+            <!-- Main Content (Slide) -->
+            <div id="content-area">
+                <div id="loading">Loading content...</div>
+            </div>
+
+            <!-- Footer -->
+            <div id="footer">
+                <div id="footer-left" class="footer-section">
+                    <!-- Injected via JS -->
+                </div>
+
+                <div id="footer-center" class="footer-section">
+                    <!-- QR Code -->
+                </div>
+
+                <div id="footer-right" class="footer-section">
+                    <div id="clock">12:00</div>
+                </div>
+            </div>
         </div>
 
-        <!-- Footer -->
-        <div id="footer">
-            <div id="footer-left" class="footer-section">
-                <!-- Injected via JS -->
-            </div>
-
-            <div id="footer-center" class="footer-section">
-                <!-- QR Code -->
-            </div>
-
-            <div id="footer-right" class="footer-section">
-                <div id="clock">12:00</div>
-            </div>
+        <!-- Floating Elements -->
+        <div id="countdown-overlay">
+            <div id="countdown-title">Countdown</div>
+            <div id="countdown-timer">00d 00h 00m</div>
         </div>
-    </div>
 
-    <!-- Floating Elements -->
-    <div id="countdown-overlay">
-        <div id="countdown-title">Countdown</div>
-        <div id="countdown-timer">00d 00h 00m</div>
+        <div id="screensaver"></div>
     </div>
-
-    <div id="screensaver"></div>
 
     <script>
         const contentArea = document.getElementById('content-area');
@@ -476,42 +495,52 @@
                     if (countdownInterval) clearInterval(countdownInterval);
                 } else {
                     countdownEl.style.display = 'flex'; // Ensure visible
-                    document.getElementById('countdown-title').textContent = title || "Countdown"; // Changed to use countdown-title
+                    document.getElementById('countdown-title').textContent = title || "Countdown";
 
-                    // Format Target Date
-                    const targetDate = new Date(target);
-                    const dateOpts = { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
-                    const dateStr = targetDate.toLocaleDateString('de-DE', dateOpts);
+                    // --- Date Display ---
                     let dateEl = document.getElementById('cd-date');
-                    if (!dateEl) {
-                        dateEl = document.createElement('div');
-                        dateEl.id = 'cd-date';
-                        dateEl.style.fontSize = '2vw';
-                        dateEl.style.marginTop = '1vw';
-                        dateEl.style.opacity = '0.8';
-                        countdownEl.appendChild(dateEl);
+                    // Check settings.countdown_show_date (default true if undefined)
+                    if (settings.countdown_show_date !== false) {
+                        if (!dateEl) {
+                            dateEl = document.createElement('div');
+                            dateEl.id = 'cd-date';
+                            dateEl.style.fontSize = '2.5rem';
+                            dateEl.style.marginTop = '0.5rem';
+                            dateEl.style.opacity = '0.9';
+                            dateEl.style.fontWeight = '300';
+                            countdownEl.appendChild(dateEl);
+                        }
+                        const targetDate = new Date(target);
+                        const dateOpts = { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+                        dateEl.textContent = targetDate.toLocaleDateString('de-DE', dateOpts);
+                        dateEl.style.display = 'block';
+                    } else {
+                        if (dateEl) dateEl.style.display = 'none';
                     }
-                    dateEl.textContent = dateStr;
 
-                    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                    // --- Timer Display ---
+                    // Check settings.countdown_show_timer (default true, but if undefined we assume true. NOTE: explicit false check needed)
+                    if (settings.countdown_show_timer !== false) {
+                        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-                    // Assuming countdown-timer div contains elements with these IDs
-                    // If not, these elements need to be created or the HTML adjusted.
-                    // For now, we'll update the existing countdownTimerEl with a new structure.
-                    countdownTimerEl.innerHTML = `
+                        countdownTimerEl.style.display = 'block';
+                        countdownTimerEl.innerHTML = `
                         <span id="cd-days">${days}</span>d 
                         <span id="cd-hours">${hours.toString().padStart(2, '0')}</span>h 
                         <span id="cd-minutes">${minutes.toString().padStart(2, '0')}</span>m 
                         <span id="cd-seconds">${seconds.toString().padStart(2, '0')}</span>s
                     `;
+                    } else {
+                        countdownTimerEl.style.display = 'none';
+                    }
                 }
             };
 
             update();
-            countdownInterval = setInterval(update, 1000); // Changed to 1 second for seconds update
+            countdownInterval = setInterval(update, 1000);
         }
 
         // --- Screensaver ---
