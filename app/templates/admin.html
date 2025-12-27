@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 
 <head>
     <meta charset="UTF-8">
@@ -11,12 +11,50 @@
             background-color: #f3f4f6;
             color: #1f2937;
             padding: 2rem;
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
         }
 
         h1 {
             margin-bottom: 2rem;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .tab-btn {
+            padding: 0.75rem 1.5rem;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-weight: 600;
+            color: #6b7280;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: #1f2937;
+        }
+
+        .tab-btn.active {
+            border-bottom-color: #2563eb;
+            color: #2563eb;
+        }
+
+        /* Content */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
         }
 
         .card {
@@ -47,7 +85,8 @@
         input[type="number"],
         input[type="datetime-local"],
         select,
-        textarea {
+        textarea,
+        input[type="color"] {
             width: 100%;
             padding: 0.5rem;
             border: 1px solid #d1d5db;
@@ -56,7 +95,13 @@
             background-color: #fff;
         }
 
-        button {
+        input[type="checkbox"] {
+            width: auto;
+            transform: scale(1.2);
+            margin-right: 0.5rem;
+        }
+
+        button.action-btn {
             background-color: #2563eb;
             color: white;
             padding: 0.75rem 1.5rem;
@@ -67,7 +112,7 @@
             font-weight: 500;
         }
 
-        button:hover {
+        button.action-btn:hover {
             background-color: #1d4ed8;
         }
 
@@ -93,43 +138,34 @@
 <body>
     <h1>Digital Signage Verwaltung</h1>
 
-    <div class="card" style="margin-bottom: 2rem;">
-        <h2 style="margin-top: 0;">Wartung & Aktionen</h2>
-        <p class="help-text" style="margin-bottom: 1rem;">Hier können Sie die Synchronisation manuell anstoßen oder eine
-            Sicherung der Einstellungen erstellen.</p>
-        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-            <button type="button" id="btnUpdate" style="background-color: #059669;">Inhalte jetzt aktualisieren</button>
-            <button type="button" id="btnRefresh" style="background-color: #3b82f6;">Browser neu laden</button>
-            <button type="button" id="btnSystemUpdate" style="background-color: #db2777;">System Update (Git)</button>
-            <button type="button" id="btnBackup" style="background-color: #4b5563;">Backup herunterladen</button>
-        </div>
-        <div id="maintMessage" style="margin-top: 1rem; display: none; padding: 0.5rem; border-radius: 4px;"></div>
-        <div style="margin-top: 1rem; font-size: 0.8rem; color: #9ca3af; text-align: right;">
-            Version: <span id="systemVersion">Lade...</span>
-        </div>
+    <!-- Tabs Navigation -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="openTab(event, 'tab-general')">Allgemein</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-design')">Design</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-countdown')">Countdown</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-screensaver')">Bildschirmschoner</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-maintenance')">Wartung</button>
     </div>
 
-    <div class="card">
-        <form id="settingsForm">
-            <h2>Allgemeine Einstellungen</h2>
+    <!-- MAIN FORM -->
+    <form id="settingsForm">
 
+        <!-- Tab: Allgemein -->
+        <div id="tab-general" class="tab-content active card">
+            <h2>Allgemeine Einstellungen</h2>
             <div class="form-group">
                 <label for="theme">Design-Modus</label>
                 <select id="theme" name="theme">
                     <option value="dark">Dunkel (Dark Mode)</option>
                     <option value="light">Hell (Light Mode)</option>
                 </select>
-                <div class="help-text">Bestimmt die grundlegende Farbgebung des Players. 'Dunkel' ist für Bildschirme
-                    oft angenehmer.</div>
+                <div class="help-text">Bestimmt die grundlegende Farbgebung des Players.</div>
             </div>
-
             <div class="form-group">
                 <label for="background_color">Hintergrundfarbe</label>
                 <input type="color" id="background_color" name="background_color" value="#000000">
-                <div class="help-text">Die Farbe des Hintergrunds, falls ein Bild den Bildschirm nicht ganz ausfüllt.
-                </div>
+                <div class="help-text">Hintergrundfarbe, falls Inhalte nicht den ganzen Screen füllen.</div>
             </div>
-
             <div class="form-group">
                 <label for="font_scale">Schriftgröße skalieren (%)</label>
                 <div style="display: flex; align-items: center; gap: 1rem;">
@@ -138,46 +174,43 @@
                         oninput="document.getElementById('font_scale_val').textContent = this.value + '%'">
                     <span id="font_scale_val" style="font-weight: bold; width: 3rem; text-align: right;">100%</span>
                 </div>
-                <div class="help-text">Passt die Größe von Titeln und Texten global an. 100% ist Standard.</div>
+                <div class="help-text">Passt die Größe von Titeln und Texten global an.</div>
             </div>
+        </div>
 
-            <!-- Corporate Identity -->
-            <hr>
-            <h3>Erscheinungsbild (Corporate Identity)</h3>
-            <p class="help-text" style="margin-bottom: 1rem;">Passen Sie den Footer (unterer Bildschirmrand) an Ihre
-                Marke an.</p>
+        <!-- Tab: Design (CI) -->
+        <div id="tab-design" class="tab-content card">
+            <h2>Erscheinungsbild (Corporate Identity)</h2>
+            <p class="help-text" style="margin-bottom: 1rem;">Passen Sie den Footer an Ihre Marke an.</p>
 
             <div class="form-group">
                 <label for="logo_url">Logo-URL</label>
                 <input type="text" id="logo_url" name="logo_url" placeholder="https://example.com/logo.png">
-                <div class="help-text">Ein direkter Link zu Ihrem Logo (JPG/PNG). Wird unten links angezeigt. Wenn leer,
-                    wird kein Logo gezeigt.</div>
+                <div class="help-text">Direkter Link zum Logo (JPG/PNG).</div>
             </div>
-
             <div class="form-group">
                 <label for="contact_name">Firmenname</label>
                 <input type="text" id="contact_name" name="contact_name" placeholder="Musterfirma GmbH">
-                <div class="help-text">Der Name, der neben dem Logo angezeigt wird.</div>
             </div>
             <div class="form-group">
                 <label for="contact_phone">Telefonnummer</label>
                 <input type="text" id="contact_phone" name="contact_phone" placeholder="+49 123 456789">
-                <div class="help-text">Erscheint unter dem Firmennamen.</div>
             </div>
             <div class="form-group">
-                <label for="contact_homepage">Webseite-URL (für QR-Code)</label>
+                <label for="contact_homepage">Webseite-URL</label>
                 <input type="text" id="contact_homepage" name="contact_homepage"
                     placeholder="https://www.meine-firma.de">
-                <div class="help-text">Aus dieser Adresse wird automatisch ein QR-Code generiert, der in der Mitte unten
-                    angezeigt wird.</div>
+                <div class="help-text">Daraus wird automatisch ein QR-Code generiert.</div>
             </div>
+            <div class="form-group">
+                <label for="custom_css">Eigenes CSS (Experten)</label>
+                <textarea id="custom_css" name="custom_css" rows="5" placeholder="body { ... }"></textarea>
+            </div>
+        </div>
 
-            <!-- Countdown -->
-            <hr>
-            <h3>Countdown (Ereignis-Timer)</h3>
-            <p class="help-text" style="margin-bottom: 1rem;">Blendet einen Countdown zu einem bestimmten Zeitpunkt ein
-                (z.B. Ladeneröffnung, Silvester).</p>
-
+        <!-- Tab: Countdown -->
+        <div id="tab-countdown" class="tab-content card">
+            <h2>Countdown (Ereignis-Timer)</h2>
             <div class="form-group">
                 <label for="countdown_enabled">Countdown aktivieren?</label>
                 <select id="countdown_enabled" name="countdown_enabled">
@@ -204,7 +237,7 @@
                 <div class="form-group">
                     <label for="countdown_target">Zielzeitpunkt</label>
                     <input type="datetime-local" id="countdown_target" name="countdown_target">
-                    <div class="help-text">Datum und Uhrzeit, bis zu der heruntergezählt wird.</div>
+                    <div class="help-text">Datum und Uhrzeit des Ziels.</div>
                 </div>
             </div>
 
@@ -220,17 +253,32 @@
                 <div class="form-group">
                     <label for="calendar_filter">Filter-Stichwort (Optional)</label>
                     <input type="text" id="calendar_filter" name="calendar_filter" placeholder="z.B. Eröffnung">
-                    <div class="help-text">Wenn gesetzt, wird nur das nächste Event gezählt, das dieses Wort im Titel
-                        hat. Sonst das nächste beliebige Event.</div>
+                    <div class="help-text">Nur Events zählen, die dieses Wort im Titel haben.</div>
                 </div>
             </div>
 
-            <!-- Screensaver -->
-            <hr>
-            <h3>Bildschirmschoner</h3>
-            <p class="help-text" style="margin-bottom: 1rem;">Aktiviert sich, wenn keine Inhalte aus Notion geladen
-                werden können (z.B. Internet weg).</p>
+            <!-- Display Options -->
+            <div class="form-group" style="background: #f9fafb; padding: 1rem; border-radius: 4px; margin-top: 1rem;">
+                <label style="margin-bottom: 0.5rem;">Anzeige-Optionen:</label>
+                <div style="display: flex; gap: 2rem;">
+                    <div style="display: flex; align-items: center;">
+                        <input type="checkbox" id="countdown_show_timer" name="countdown_show_timer" value="true"
+                            checked>
+                        <label for="countdown_show_timer" style="display: inline; font-weight: normal; margin:0;">Timer
+                            (Tage/Std/Min)</label>
+                    </div>
+                    <div style="display: flex; align-items: center;">
+                        <input type="checkbox" id="countdown_show_date" name="countdown_show_date" value="true" checked>
+                        <label for="countdown_show_date"
+                            style="display: inline; font-weight: normal; margin:0;">Absolute Zielzeit</label>
+                    </div>
+                </div>
+            </div>
+        </div>
 
+        <!-- Tab: Screensaver -->
+        <div id="tab-screensaver" class="tab-content card">
+            <h2>Bildschirmschoner</h2>
             <div class="form-group">
                 <label for="screensaver_enabled">Bildschirmschoner aktiv?</label>
                 <select id="screensaver_enabled" name="screensaver_enabled">
@@ -238,13 +286,10 @@
                     <option value="false">Nein</option>
                 </select>
             </div>
-
             <div class="form-group">
                 <label for="screensaver_timeout">Wartezeit (Sekunden)</label>
                 <input type="number" id="screensaver_timeout" name="screensaver_timeout" min="10">
-                <div class="help-text">Wie lange soll gewartet werden, bevo der Schoner angeht?</div>
             </div>
-
             <div class="form-group">
                 <label for="screensaver_type">Art des Schoners</label>
                 <select id="screensaver_type" name="screensaver_type">
@@ -252,27 +297,69 @@
                     <option value="image">Zufallsbild (Unsplash)</option>
                 </select>
             </div>
+        </div>
 
-            <hr>
-            <h3>Erweitert</h3>
-            <div class="form-group">
-                <label for="custom_css">Eigenes CSS</label>
-                <textarea id="custom_css" name="custom_css" rows="5" placeholder="body { ... }"></textarea>
-                <div class="help-text">Hier können Sie tiefgreifende Design-Änderungen vornehmen. Nur für Experten.
-                </div>
-            </div>
+        <!-- SAVE BUTTON (Bottom Sticky or just bottom) -->
+        <div
+            style="margin-top: 2rem; background: white; padding: 1rem; border-top: 1px solid #e5e7eb; position: sticky; bottom: 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.1);">
+            <button type="submit" class="action-btn" style="width: 100%;">Einstellungen speichern</button>
+            <div id="message"></div>
+        </div>
 
-            <button type="submit">Einstellungen speichern</button>
-        </form>
-        <div id="message"></div>
+    </form>
+
+    <!-- Tab: Wartung (Kein Formular, separate Actions) -->
+    <div id="tab-maintenance" class="tab-content card" style="margin-top: 2rem;">
+        <h2>Wartung & Aktionen</h2>
+        <p class="help-text" style="margin-bottom: 1rem;">Systemsteuerung und Updates.</p>
+
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <button type="button" id="btnUpdate" class="action-btn" style="background-color: #059669;">Notion
+                Sync</button>
+            <button type="button" id="btnRefresh" class="action-btn" style="background-color: #3b82f6;">Browser neu
+                laden</button>
+            <button type="button" id="btnSystemUpdate" class="action-btn" style="background-color: #db2777;">System
+                Update</button>
+            <button type="button" id="btnBackup" class="action-btn" style="background-color: #4b5563;">Backup
+                downloaden</button>
+        </div>
+
+        <div id="maintMessage" style="margin-top: 1rem; padding: 1rem; display: none; border-radius: 4px;"></div>
+        <div style="margin-top: 1rem; font-size: 0.8rem; color: #9ca3af; text-align: right;">
+            Version: <span id="systemVersion">Lade...</span>
+        </div>
     </div>
 
     <script>
+        // Tab Handling
+        function openTab(evt, tabName) {
+            var i, tabContent, tabBtn;
+
+            tabContent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabContent.length; i++) {
+                tabContent[i].style.display = "none";
+                tabContent[i].classList.remove("active");
+            }
+
+            tabBtn = document.getElementsByClassName("tab-btn");
+            for (i = 0; i < tabBtn.length; i++) {
+                tabBtn[i].className = tabBtn[i].className.replace(" active", "");
+            }
+
+            document.getElementById(tabName).style.display = "block";
+            // Check if tabular was inside form or outside (maintenance is outside)
+            // Actually I put maintenance outside the form, so distinct block.
+            // But if I want tabs to switch between form sections AND maintenance...
+            // the logic above just hides/shows IDs. It works fine.
+
+            evt.currentTarget.className += " active";
+        }
+
         const form = document.getElementById('settingsForm');
         const messageDiv = document.getElementById('message');
         const maintMessage = document.getElementById('maintMessage');
 
-        // Toggle settings visibility based on mode
+        // Countdown Source logic
         const modeSelect = document.getElementById('countdown_mode');
         const manualDiv = document.getElementById('countdown_manual_settings');
         const calendarDiv = document.getElementById('countdown_calendar_settings');
@@ -293,75 +380,73 @@
             try {
                 const res = await fetch('/api/settings');
                 const data = await res.json();
-
-                // Helper to safely set values
                 const setVal = (id, val) => {
                     const el = document.getElementById(id);
                     if (el) el.value = val !== undefined ? val : "";
                 };
 
+                // General
                 setVal('theme', data.theme);
                 setVal('background_color', data.background_color);
                 setVal('font_scale', data.font_scale || 100);
                 document.getElementById('font_scale_val').textContent = (data.font_scale || 100) + '%';
 
+                // Design
                 setVal('logo_url', data.logo_url);
                 setVal('contact_name', data.contact_name);
                 setVal('contact_phone', data.contact_phone);
                 setVal('contact_homepage', data.contact_homepage);
+                setVal('custom_css', data.custom_css);
 
+                // Countdown
                 setVal('countdown_enabled', data.countdown_enabled.toString());
                 setVal('countdown_mode', data.countdown_mode || "manual");
                 setVal('countdown_title', data.countdown_title);
                 setVal('countdown_target', data.countdown_target);
-
                 setVal('calendar_url', data.calendar_url);
                 setVal('calendar_filter', data.calendar_filter);
 
+                if (document.getElementById('countdown_show_timer')) {
+                    document.getElementById('countdown_show_timer').checked = data.countdown_show_timer !== false;
+                    document.getElementById('countdown_show_date').checked = data.countdown_show_date !== false;
+                }
+
+                // Screensaver
                 setVal('screensaver_enabled', data.screensaver_enabled.toString());
                 setVal('screensaver_timeout', data.screensaver_timeout);
                 setVal('screensaver_type', data.screensaver_type);
-                setVal('custom_css', data.custom_css);
 
                 updateVisibility();
-
-            } catch (err) {
-                console.error("Fehler beim Laden der Einstellungen", err);
-            }
+            } catch (err) { console.error(err); }
         }
-
         loadSettings();
 
-        // Load System Version
+        // Load Version
         async function loadVersion() {
             try {
                 const res = await fetch('/api/system/version');
                 const data = await res.json();
-                if (data.commit) {
-                    document.getElementById('systemVersion').textContent = data.commit;
-                } else {
-                    document.getElementById('systemVersion').textContent = 'Unbekannt';
-                }
-            } catch (e) {
-                console.error("Failed to load version", e);
-                document.getElementById('systemVersion').textContent = 'Fehler';
-            }
+                document.getElementById('systemVersion').textContent = data.commit || 'Unbekannt';
+            } catch (e) { document.getElementById('systemVersion').textContent = 'Fehler'; }
         }
         loadVersion();
 
         // Save Settings
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-
             const formData = new FormData(form);
             const jsonData = {};
+
+            // Handle Checkboxes
+            jsonData.countdown_show_timer = document.getElementById('countdown_show_timer').checked;
+            jsonData.countdown_show_date = document.getElementById('countdown_show_date').checked;
 
             formData.forEach((value, key) => {
                 if (['screensaver_enabled', 'countdown_enabled'].includes(key)) {
                     jsonData[key] = value === 'true';
                 } else if (['screensaver_timeout', 'font_scale'].includes(key)) {
                     jsonData[key] = parseInt(value);
-                } else {
+                } else if (!['countdown_show_timer', 'countdown_show_date'].includes(key)) {
                     jsonData[key] = value;
                 }
             });
@@ -372,110 +457,48 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(jsonData)
                 });
-
                 if (res.ok) {
                     messageDiv.className = 'success';
-                    messageDiv.textContent = 'Einstellungen erfolgreich gespeichert!';
+                    messageDiv.textContent = 'Gespeichert!';
                     messageDiv.style.display = 'block';
                     setTimeout(() => messageDiv.style.display = 'none', 3000);
-                } else {
-                    throw new Error('Speichern fehlgeschlagen');
-                }
+                } else throw new Error();
             } catch (err) {
                 messageDiv.className = 'error';
-                messageDiv.textContent = 'Fehler beim Speichern der Einstellungen.';
+                messageDiv.textContent = 'Fehler beim Speichern.';
                 messageDiv.style.display = 'block';
             }
         });
 
-        // Maintenance Buttons
-        document.getElementById('btnUpdate').addEventListener('click', async () => {
-            maintMessage.style.display = 'block';
-            maintMessage.style.background = '#e5e7eb';
-            maintMessage.textContent = 'Update wird gestartet...';
-            try {
-                const res = await fetch('/api/trigger_sync', { method: 'POST' });
-                if (res.ok) {
-                    maintMessage.style.background = '#d1fae5';
-                    maintMessage.textContent = 'Update erfolgreich angestoßen.';
-                } else {
-                    throw new Error('Update failed');
-                }
-            } catch (e) {
-                maintMessage.style.background = '#fee2e2';
-                maintMessage.textContent = 'Update fehlgeschlagen. Bitte Logs prüfen.';
-            }
-            setTimeout(() => maintMessage.style.display = 'none', 5000);
-        });
-
-        document.getElementById('btnRefresh').addEventListener('click', async () => {
-            maintMessage.style.display = 'block';
-            maintMessage.style.background = '#e5e7eb';
-            maintMessage.textContent = 'Sende Reload-Befehl...';
-            try {
-                const res = await fetch('/api/system/refresh', { method: 'POST' });
-                if (res.ok) {
-                    maintMessage.style.background = '#d1fae5';
-                    maintMessage.textContent = 'Befehl gesendet. Browser laden sich in ca. 30s neu.';
-                } else {
-                    throw new Error('Request failed');
-                }
-            } catch (e) {
-                maintMessage.style.background = '#fee2e2';
-                maintMessage.textContent = 'Fehler: ' + e.message;
-            }
-            setTimeout(() => maintMessage.style.display = 'none', 5000);
-        });
-
-        document.getElementById('btnSystemUpdate').addEventListener('click', async () => {
-            if (!confirm("Wollen Sie wirklich ein System-Update (Git Pull) durchführen? Der Server startet danach neu.")) return;
-
-            maintMessage.style.display = 'block';
-            maintMessage.style.background = '#e5e7eb';
-            maintMessage.textContent = 'System Update läuft... Bitte warten...';
+        // Maintenance Actions
+        async function triggerAction(endpoint, btnId, msgLoading, msgSuccess) {
+            const btn = document.getElementById(btnId);
+            const msg = document.getElementById('maintMessage');
+            msg.style.display = 'block';
+            msg.style.background = '#e5e7eb';
+            msg.textContent = msgLoading;
 
             try {
-                const res = await fetch('/api/system/update', { method: 'POST' });
-                const data = await res.json();
-
+                const res = await fetch(endpoint, { method: 'POST' });
                 if (res.ok) {
-                    maintMessage.style.background = '#d1fae5';
-                    maintMessage.textContent = 'Update erfolgreich! System startet neu. Bitte warten Sie ca. 30 Sekunden und laden Sie die Seite neu.';
-                } else {
-                    throw new Error(data.detail || 'Update failed');
-                }
+                    msg.style.background = '#d1fae5';
+                    msg.textContent = msgSuccess;
+                } else throw new Error();
             } catch (e) {
-                maintMessage.style.background = '#fee2e2';
-                maintMessage.textContent = 'Update Fehler: ' + e.message;
+                msg.style.background = '#fee2e2';
+                msg.textContent = 'Fehler aufgetreten.';
             }
-        });
+            setTimeout(() => msg.style.display = 'none', 5000);
+        }
 
-        document.getElementById('btnBackup').addEventListener('click', () => {
-            window.location.href = '/api/backup';
-        });
-
-        document.getElementById('btnSystemUpdate').addEventListener('click', async () => {
-            if (!confirm("Wollen Sie wirklich ein System-Update (Git Pull) durchführen? Der Server startet danach neu.")) return;
-
-            maintMessage.style.display = 'block';
-            maintMessage.style.background = '#e5e7eb';
-            maintMessage.textContent = 'System Update läuft... Bitte warten...';
-
-            try {
-                const res = await fetch('/api/system/update', { method: 'POST' });
-                const data = await res.json();
-
-                if (res.ok) {
-                    maintMessage.style.background = '#d1fae5';
-                    maintMessage.textContent = 'Update erfolgreich! System startet neu. Bitte warten Sie ca. 30 Sekunden und laden Sie die Seite neu.';
-                } else {
-                    throw new Error(data.detail || 'Update failed');
-                }
-            } catch (e) {
-                maintMessage.style.background = '#fee2e2';
-                maintMessage.textContent = 'Update Fehler: ' + e.message;
+        document.getElementById('btnUpdate').onclick = () => triggerAction('/api/trigger_sync', 'btnUpdate', 'Sync läuft...', 'Sync erfolgreich!');
+        document.getElementById('btnRefresh').onclick = () => triggerAction('/api/system/refresh', 'btnRefresh', 'Sende Reload...', 'Browser laden neu.');
+        document.getElementById('btnSystemUpdate').onclick = async () => {
+            if (confirm("Update wirklich starten?")) {
+                triggerAction('/api/system/update', 'btnSystemUpdate', 'Update läuft...', 'Update fertig (System startet neu).');
             }
-        });
+        };
+        document.getElementById('btnBackup').onclick = () => window.location.href = '/api/backup';
 
     </script>
 </body>
