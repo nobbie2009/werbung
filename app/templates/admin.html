@@ -103,6 +103,9 @@
             <button type="button" id="btnBackup" style="background-color: #4b5563;">Backup herunterladen</button>
         </div>
         <div id="maintMessage" style="margin-top: 1rem; display: none; padding: 0.5rem; border-radius: 4px;"></div>
+        <div style="margin-top: 1rem; font-size: 0.8rem; color: #9ca3af; text-align: right;">
+            Version: <span id="systemVersion">Lade...</span>
+        </div>
     </div>
 
     <div class="card">
@@ -276,6 +279,23 @@
         }
 
         loadSettings();
+
+        // Load System Version
+        async function loadVersion() {
+            try {
+                const res = await fetch('/api/system/version');
+                const data = await res.json();
+                if (data.commit) {
+                    document.getElementById('systemVersion').textContent = data.commit;
+                } else {
+                    document.getElementById('systemVersion').textContent = 'Unbekannt';
+                }
+            } catch (e) {
+                console.error("Failed to load version", e);
+                document.getElementById('systemVersion').textContent = 'Fehler';
+            }
+        }
+        loadVersion();
 
         // Save Settings
         form.addEventListener('submit', async (e) => {

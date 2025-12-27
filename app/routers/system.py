@@ -11,10 +11,24 @@ logger = logging.getLogger(__name__)
 # Store startup time as logical "version"
 STARTUP_TIME = int(time.time())
 
+# Fetch Git Commit Hash
+COMMIT_HASH = "unknown"
+try:
+    COMMIT_HASH = subprocess.check_output(
+        ["git", "rev-parse", "--short", "HEAD"], 
+        cwd="/app", 
+        text=True
+    ).strip()
+except Exception as e:
+    logger.warning(f"Failed to get git commit hash: {e}")
+
 @router.get("/version")
 async def get_version():
-    """Returns the server startup timestamp. Used by clients to detect restarts."""
-    return {"version": STARTUP_TIME}
+    """Returns server startup timestamp and git commit hash."""
+    return {
+        "version": STARTUP_TIME,
+        "commit": COMMIT_HASH
+    }
 
 @router.post("/update")
 async def trigger_update():
