@@ -33,11 +33,19 @@
         label {
             display: block;
             margin-bottom: 0.5rem;
-            font-weight: 500;
+            font-weight: 600;
+        }
+
+        .help-text {
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+            line-height: 1.4;
         }
 
         input[type="text"],
         input[type="number"],
+        input[type="datetime-local"],
         select,
         textarea {
             width: 100%;
@@ -45,6 +53,7 @@
             border: 1px solid #d1d5db;
             border-radius: 4px;
             box-sizing: border-box;
+            background-color: #fff;
         }
 
         button {
@@ -55,6 +64,7 @@
             border-radius: 4px;
             cursor: pointer;
             font-size: 1rem;
+            font-weight: 500;
         }
 
         button:hover {
@@ -81,115 +91,144 @@
 </head>
 
 <body>
-    <h1>Digital Signage Settings</h1>
+    <h1>Digital Signage Verwaltung</h1>
 
     <div class="card" style="margin-bottom: 2rem;">
-        <h2 style="margin-top: 0;">Maintenance</h2>
+        <h2 style="margin-top: 0;">Wartung & Aktionen</h2>
+        <p class="help-text" style="margin-bottom: 1rem;">Hier können Sie die Synchronisation manuell anstoßen oder eine
+            Sicherung der Einstellungen erstellen.</p>
         <div style="display: flex; gap: 1rem;">
-            <button type="button" id="btnUpdate" style="background-color: #059669;">Update Content Now</button>
-            <button type="button" id="btnBackup" style="background-color: #4b5563;">Download Backup</button>
+            <button type="button" id="btnUpdate" style="background-color: #059669;">Inhalte jetzt aktualisieren</button>
+            <button type="button" id="btnBackup" style="background-color: #4b5563;">Backup herunterladen</button>
         </div>
         <div id="maintMessage" style="margin-top: 1rem; display: none; padding: 0.5rem; border-radius: 4px;"></div>
     </div>
 
     <div class="card">
         <form id="settingsForm">
-            <h2>General Settings</h2>
+            <h2>Allgemeine Einstellungen</h2>
+
             <div class="form-group">
-                <label for="theme">Theme</label>
+                <label for="theme">Design-Modus</label>
                 <select id="theme" name="theme">
-                    <option value="dark">Dark</option>
-                    <option value="light">Light</option>
+                    <option value="dark">Dunkel (Dark Mode)</option>
+                    <option value="light">Hell (Light Mode)</option>
                 </select>
+                <div class="help-text">Bestimmt die grundlegende Farbgebung des Players. 'Dunkel' ist für Bildschirme
+                    oft angenehmer.</div>
             </div>
 
             <div class="form-group">
-                <label for="background_color">Background Color</label>
+                <label for="background_color">Hintergrundfarbe</label>
                 <input type="color" id="background_color" name="background_color" value="#000000">
+                <div class="help-text">Die Farbe des Hintergrunds, falls ein Bild den Bildschirm nicht ganz ausfüllt.
+                </div>
             </div>
 
             <div class="form-group">
-                <label for="font_scale">Font Size Scale (%)</label>
-                <input type="range" id="font_scale" name="font_scale" min="50" max="200" value="100"
-                    oninput="document.getElementById('font_scale_val').textContent = this.value + '%'">
-                <span id="font_scale_val">100%</span>
+                <label for="font_scale">Schriftgröße skalieren (%)</label>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <input type="range" id="font_scale" name="font_scale" min="50" max="200" value="100"
+                        style="flex: 1;"
+                        oninput="document.getElementById('font_scale_val').textContent = this.value + '%'">
+                    <span id="font_scale_val" style="font-weight: bold; width: 3rem; text-align: right;">100%</span>
+                </div>
+                <div class="help-text">Passt die Größe von Titeln und Texten global an. 100% ist Standard.</div>
             </div>
 
             <!-- Corporate Identity -->
             <hr>
-            <h3>Corporate Identity</h3>
+            <h3>Erscheinungsbild (Corporate Identity)</h3>
+            <p class="help-text" style="margin-bottom: 1rem;">Passen Sie den Footer (unterer Bildschirmrand) an Ihre
+                Marke an.</p>
+
             <div class="form-group">
-                <label for="logo_url">Logo URL (http... or /media/...)</label>
+                <label for="logo_url">Logo-URL</label>
                 <input type="text" id="logo_url" name="logo_url" placeholder="https://example.com/logo.png">
+                <div class="help-text">Ein direkter Link zu Ihrem Logo (JPG/PNG). Wird unten links angezeigt. Wenn leer,
+                    wird kein Logo gezeigt.</div>
             </div>
 
-            <!-- Contact Info -->
-            <hr>
-            <h3>Contact Info (Footer)</h3>
             <div class="form-group">
-                <label for="contact_name">Company Name</label>
-                <input type="text" id="contact_name" name="contact_name">
+                <label for="contact_name">Firmenname</label>
+                <input type="text" id="contact_name" name="contact_name" placeholder="Musterfirma GmbH">
+                <div class="help-text">Der Name, der neben dem Logo angezeigt wird.</div>
             </div>
             <div class="form-group">
-                <label for="contact_phone">Phone Number</label>
-                <input type="text" id="contact_phone" name="contact_phone">
+                <label for="contact_phone">Telefonnummer</label>
+                <input type="text" id="contact_phone" name="contact_phone" placeholder="+49 123 456789">
+                <div class="help-text">Erscheint unter dem Firmennamen.</div>
             </div>
             <div class="form-group">
-                <label for="contact_homepage">Homepage URL (for QR Code)</label>
-                <input type="text" id="contact_homepage" name="contact_homepage">
+                <label for="contact_homepage">Webseite-URL (für QR-Code)</label>
+                <input type="text" id="contact_homepage" name="contact_homepage"
+                    placeholder="https://www.meine-firma.de">
+                <div class="help-text">Aus dieser Adresse wird automatisch ein QR-Code generiert, der in der Mitte unten
+                    angezeigt wird.</div>
             </div>
 
             <!-- Countdown -->
             <hr>
-            <h3>Countdown Overlay</h3>
+            <h3>Countdown (Ereignis-Timer)</h3>
+            <p class="help-text" style="margin-bottom: 1rem;">Blendet einen Countdown zu einem bestimmten Zeitpunkt ein
+                (z.B. Ladeneröffnung, Silvester).</p>
+
             <div class="form-group">
-                <label for="countdown_enabled">Enable Countdown</label>
+                <label for="countdown_enabled">Countdown aktivieren?</label>
                 <select id="countdown_enabled" name="countdown_enabled">
-                    <option value="false">No</option>
-                    <option value="true">Yes</option>
+                    <option value="false">Nein</option>
+                    <option value="true">Ja</option>
                 </select>
             </div>
             <div class="form-group">
-                <label for="countdown_title">Event Title</label>
-                <input type="text" id="countdown_title" name="countdown_title">
+                <label for="countdown_title">Titel des Ereignisses</label>
+                <input type="text" id="countdown_title" name="countdown_title" placeholder="Event beginnt in">
+                <div class="help-text">Wird über dem Timer angezeigt.</div>
             </div>
             <div class="form-group">
-                <label for="countdown_target">Target Date/Time</label>
+                <label for="countdown_target">Zielzeitpunkt</label>
                 <input type="datetime-local" id="countdown_target" name="countdown_target">
+                <div class="help-text">Datum und Uhrzeit, bis zu der heruntergezählt wird.</div>
             </div>
 
             <!-- Screensaver -->
             <hr>
-            <h3>Screensaver</h3>
+            <h3>Bildschirmschoner</h3>
+            <p class="help-text" style="margin-bottom: 1rem;">Aktiviert sich, wenn keine Inhalte aus Notion geladen
+                werden können (z.B. Internet weg).</p>
+
             <div class="form-group">
-                <label for="screensaver_enabled">Screensaver Enabled</label>
+                <label for="screensaver_enabled">Bildschirmschoner aktiv?</label>
                 <select id="screensaver_enabled" name="screensaver_enabled">
-                    <option value="true">Yes</option>
-                    <option value="false">No</option>
+                    <option value="true">Ja</option>
+                    <option value="false">Nein</option>
                 </select>
             </div>
 
             <div class="form-group">
-                <label for="screensaver_timeout">Screensaver Timeout (seconds)</label>
+                <label for="screensaver_timeout">Wartezeit (Sekunden)</label>
                 <input type="number" id="screensaver_timeout" name="screensaver_timeout" min="10">
+                <div class="help-text">Wie lange soll gewartet werden, bevo der Schoner angeht?</div>
             </div>
 
             <div class="form-group">
-                <label for="screensaver_type">Screensaver Type</label>
+                <label for="screensaver_type">Art des Schoners</label>
                 <select id="screensaver_type" name="screensaver_type">
-                    <option value="black">Black Screen</option>
-                    <option value="image">Random Image (Unsplash)</option>
+                    <option value="black">Schwarzer Bildschirm</option>
+                    <option value="image">Zufallsbild (Unsplash)</option>
                 </select>
             </div>
 
             <hr>
-            <h3>Advanced</h3>
+            <h3>Erweitert</h3>
             <div class="form-group">
-                <label for="custom_css">Custom CSS</label>
-                <textarea id="custom_css" name="custom_css" rows="5"></textarea>
+                <label for="custom_css">Eigenes CSS</label>
+                <textarea id="custom_css" name="custom_css" rows="5" placeholder="body { ... }"></textarea>
+                <div class="help-text">Hier können Sie tiefgreifende Design-Änderungen vornehmen. Nur für Experten.
+                </div>
             </div>
 
-            <button type="submit">Save Settings</button>
+            <button type="submit">Einstellungen speichern</button>
         </form>
         <div id="message"></div>
     </div>
@@ -198,8 +237,6 @@
         const form = document.getElementById('settingsForm');
         const messageDiv = document.getElementById('message');
         const maintMessage = document.getElementById('maintMessage');
-
-        // Toggle Password Visibility? No, but maybe generic helper
 
         // Load Settings
         async function loadSettings() {
@@ -233,7 +270,7 @@
                 setVal('custom_css', data.custom_css);
 
             } catch (err) {
-                console.error("Failed to load settings", err);
+                console.error("Fehler beim Laden der Einstellungen", err);
             }
         }
 
@@ -265,15 +302,15 @@
 
                 if (res.ok) {
                     messageDiv.className = 'success';
-                    messageDiv.textContent = 'Settings saved successfully!';
+                    messageDiv.textContent = 'Einstellungen erfolgreich gespeichert!';
                     messageDiv.style.display = 'block';
                     setTimeout(() => messageDiv.style.display = 'none', 3000);
                 } else {
-                    throw new Error('Save failed');
+                    throw new Error('Speichern fehlgeschlagen');
                 }
             } catch (err) {
                 messageDiv.className = 'error';
-                messageDiv.textContent = 'Failed to save settings.';
+                messageDiv.textContent = 'Fehler beim Speichern der Einstellungen.';
                 messageDiv.style.display = 'block';
             }
         });
@@ -282,18 +319,18 @@
         document.getElementById('btnUpdate').addEventListener('click', async () => {
             maintMessage.style.display = 'block';
             maintMessage.style.background = '#e5e7eb';
-            maintMessage.textContent = 'Triggering update...';
+            maintMessage.textContent = 'Update wird gestartet...';
             try {
                 const res = await fetch('/api/trigger_sync', { method: 'POST' });
                 if (res.ok) {
                     maintMessage.style.background = '#d1fae5';
-                    maintMessage.textContent = 'Update triggered successfully.';
+                    maintMessage.textContent = 'Update erfolgreich angestoßen.';
                 } else {
                     throw new Error('Update failed');
                 }
             } catch (e) {
                 maintMessage.style.background = '#fee2e2';
-                maintMessage.textContent = 'Update failed. Check logs.';
+                maintMessage.textContent = 'Update fehlgeschlagen. Bitte Logs prüfen.';
             }
             setTimeout(() => maintMessage.style.display = 'none', 5000);
         });
